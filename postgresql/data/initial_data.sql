@@ -1,4 +1,1 @@
-INSERT INTO hello_schema.users(name, count)
-VALUES ('user-from-initial_data.sql', 42)
-ON CONFLICT (name)
-DO NOTHING;
+INSERT INTO elschool_api_schema.elschool_users (id, login, password) VALUES ('e5e79b0d1e2c49f097db4930c9ea8c43', 'login', 'password');

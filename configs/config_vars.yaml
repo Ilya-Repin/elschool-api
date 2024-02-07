@@ -6,4 +6,4 @@ is-testing: false
 
 server-port: 8080
 
-dbconnection: 'postgresql://elschool_api_user:password@host:5432/elschool_api_db'
+dbconnection: 'postgresql://user:password@host:port/db'

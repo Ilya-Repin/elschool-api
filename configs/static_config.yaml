@@ -35,7 +35,7 @@ components_manager:
         testsuite-support: {}
 
         http-client:
-            load-enabled: $is-testing
+            load-enabled: true #$is-testing
             fs-task-processor: fs-task-processor
 
         tests-control:
@@ -50,12 +50,35 @@ components_manager:
             throttling_enabled: false
             url_trailing_slash: strict-match
 
-        handler-hello:                    # Finally! Our handler.
-            path: /v1/hello               # Registering handler by URL '/v1/hello'.
-            method: POST                  # It will only reply to POST requests.
-            task_processor: main-task-processor  # Run it on CPU bound task processor
 
-        postgres-db-1:
+        handler-average-marks:
+            path: /v1/average_marks
+            method: POST
+            task_processor: main-task-processor
+            parse_args_from_body: true
+
+        handler-today-marks:
+            path: /v1/today_marks
+            method: POST
+            task_processor: main-task-processor
+            parse_args_from_body: true
+
+        handler-invalidate-token:
+            path: /v1/token/invalidate
+            method: POST
+            task_processor: main-task-processor
+            parse_args_from_body: true
+
+        handler-users:
+            path: /v1/users
+            method: POST,DELETE,PUT
+            task_processor: main-task-processor
+            parse_args_from_body: true
+
+        token-manager:
+        user-manager:
+
+        postgres-elschool-db:
             dbconnection: $dbconnection
             blocking_task_processor: fs-task-processor
             dns_resolver: async

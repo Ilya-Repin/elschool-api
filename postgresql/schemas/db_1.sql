@@ -1,8 +1,7 @@
-DROP SCHEMA IF EXISTS hello_schema CASCADE;
+CREATE SCHEMA IF NOT EXISTS elschool_api_schema;
 
-CREATE SCHEMA IF NOT EXISTS hello_schema;
-
-CREATE TABLE IF NOT EXISTS hello_schema.users (
-    name TEXT PRIMARY KEY,
-    count INTEGER DEFAULT(1)
-);
+CREATE TABLE IF NOT EXISTS elschool_api_schema.elschool_users (
+    id UUID PRIMARY KEY,
+    login varchar(100) NOT NULL,
+    password varchar(100) NOT NULL
+    );
