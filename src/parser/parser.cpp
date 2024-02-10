@@ -1,4 +1,5 @@
 #include "parser.hpp"
+#include <chrono>
 #include <cstring>
 #include <iomanip>
 #include <sstream>
@@ -6,8 +7,7 @@
 #include "../utils/exceptions.h"
 
 namespace {
-GumboNode* FindTag(GumboNode* node,
-                   std::stack<parser::MarkupElem>& path) {
+GumboNode* FindTag(GumboNode* node, std::stack<parser::MarkupElem>& path) {
   if (path.empty()) {
     return node;
   }
@@ -33,66 +33,7 @@ GumboNode* FindTag(GumboNode* node,
   throw exceptions::ParsingException("Can't find element!");
 }
 
-int GetMonth() {
-  std::time_t currentTime = std::time(nullptr);
-  std::tm* localTime = std::localtime(&currentTime);
-  return localTime->tm_mon + 1;
-}
-
-// Функция для определения текущего семестра
-int GetSemester() {
-  int month = GetMonth();
-  if (month >= 1 && month <= 6) {
-    return 1;  // Осенний семестр
-  } else if (month >= 9 && month <= 12) {
-    return 2;  // Весенний семестр
-  } else {
-    return 0;  // Вне учебных семестров
-  }
-}
-
-// Функция для определения текущего триместра
-int GetTrimester() {
-  int month = GetMonth();
-  if (month >= 9 && month <= 11) {
-    return 1;  // Первый триместр
-  } else if (month == 12 || month == 1 || month == 2) {
-    return 2;  // Второй триместр
-  } else if (month >= 3 && month <= 5) {
-    return 3;  // Третий триместр
-  } else {
-    return 0;  // Вне триместров
-  }
-}
-
-// Функция для определения текущего квартала
-int GetQuarter() {
-  int month = GetMonth();
-  if (month >= 9 && month <= 10) {
-    return 1;  // Первый квартал
-  } else if (month >= 11 && month <= 12) {
-    return 2;  // Второй квартал
-  } else if (month >= 1 && month <= 3) {
-    return 3;  // Третий квартал
-  } else if (month >= 3 && month <= 5) {
-    return 4;  // Четвертый квартал
-  } else {
-    return 0;  // Вне кварталов
-  }
-}
-
-std::string GetDate() {
-  std::time_t currentTime = std::time(nullptr);
-
-  std::tm* localTime = std::localtime(&currentTime);
-
-  std::stringstream ss;
-  ss << std::put_time(localTime, "%d.%m.%Y");
-  return ss.str();
-}
-
 int CountPeriods(GumboNode* tbody) {
-
   static int periods = 0;
 
   if (periods > 0) {
@@ -112,11 +53,72 @@ int CountPeriods(GumboNode* tbody) {
   return periods;
 }
 
-} // namespace
+}  // namespace
 
 namespace parser {
 
 using namespace std::literals;
+
+int CurrentTimeProvider::GetMonth() {
+  auto now = std::chrono::system_clock::now();
+
+  time_t time = std::chrono::system_clock::to_time_t(now);
+  tm* localTime = std::localtime(&time);
+
+  return localTime->tm_mon + 1;
+}
+
+// Функция для определения текущего семестра
+int CurrentTimeProvider::GetSemester() {
+  int month = GetMonth();
+  if (month >= 1 && month <= 6) {
+    return 1;  // Осенний семестр
+  } else if (month >= 9 && month <= 12) {
+    return 2;  // Весенний семестр
+  } else {
+    return 0;  // Вне учебных семестров
+  }
+}
+
+// Функция для определения текущего триместра
+int CurrentTimeProvider::GetTrimester() {
+  int month = GetMonth();
+  if (month >= 9 && month <= 11) {
+    return 1;  // Первый триместр
+  } else if (month == 12 || month == 1 || month == 2) {
+    return 2;  // Второй триместр
+  } else if (month >= 3 && month <= 5) {
+    return 3;  // Третий триместр
+  } else {
+    return 0;  // Вне триместров
+  }
+}
+
+// Функция для определения текущего квартала
+int CurrentTimeProvider::GetQuarter() {
+  int month = GetMonth();
+  if (month >= 9 && month <= 10) {
+    return 1;  // Первый квартал
+  } else if (month >= 11 && month <= 12) {
+    return 2;  // Второй квартал
+  } else if (month >= 1 && month <= 3) {
+    return 3;  // Третий квартал
+  } else if (month >= 3 && month <= 5) {
+    return 4;  // Четвертый квартал
+  } else {
+    return 0;  // Вне кварталов
+  }
+}
+
+std::string CurrentTimeProvider::GetDate() {
+  std::time_t currentTime = std::time(nullptr);
+
+  std::tm* localTime = std::localtime(&currentTime);
+
+  std::stringstream ss;
+  ss << std::put_time(localTime, "%d.%m.%Y");
+  return ss.str();
+}
 
 void AverageParsingStrategy::FindAverageMarks(
     GumboNode* table,
@@ -130,7 +132,8 @@ void AverageParsingStrategy::FindAverageMarks(
     GumboNode* child = static_cast<GumboNode*>(children->data[i]);
 
     if (child->v.element.tag == GUMBO_TAG_THEAD) {
-      GumboNode* tr = static_cast<GumboNode*>(child->v.element.children.data[1]);
+      GumboNode* tr =
+          static_cast<GumboNode*>(child->v.element.children.data[1]);
 
       GumboNode* th = static_cast<GumboNode*>(tr->v.element.children.data[1]);
 
@@ -169,16 +172,19 @@ void AverageParsingStrategy::FindAverageMarks(
       }
 
       try {
-        second = marks.at(((periods == 4) ? GetQuarter()
-                                          : ((periods == 3)   ? GetTrimester()
-                                             : (periods == 2) ? GetSemester()
-                                                              : 1)) -
-                          1);
+        second = marks.at(
+            ((periods == 4) ? time_provider_.GetQuarter()
+                            : ((periods == 3)   ? time_provider_.GetTrimester()
+                               : (periods == 2) ? time_provider_.GetSemester()
+                                                : 1)) -
+            1);
       } catch (std::exception& e) {
         second = "";
       }
 
-      average_marks[first] = second;
+      if (!second.empty()) {
+        average_marks[first] = second;
+      }
     }
   }
 }
@@ -218,7 +224,7 @@ void TodayParsingStrategy::GetPeriodsMarks(GumboNode* tag_marks,
       std::string date = dates.substr(
           sizeof("Дата урока: 11.11.1111<p>Дата проставления: ") - 1);
 
-      if (date == GetDate()) {
+      if (date == time_provider_.GetDate()) {
         GumboNode* text =
             static_cast<GumboNode*>(child->v.element.children.data[0]);
         std::string mark = text->v.text.text;
@@ -267,7 +273,11 @@ void TodayParsingStrategy::FindTodayMarks(
           GetPeriodsMarks(tr_child, marks);
 
           if (!marks.empty()) {
-            today_marks[lesson] = marks;
+            if (today_marks.find(lesson) != today_marks.end()) {
+              today_marks[lesson] += marks;
+            } else {
+              today_marks[lesson] = marks;
+            }
           }
         }
       }
@@ -295,21 +305,33 @@ void TodayParsingStrategy::Parse(
   FindTodayMarks(full_table, today_marks);
 }
 
-std::unordered_map<std::string, std::string> Parser::Parse(
-    std::string html, Strategy parsing_strategy) const {
-  std::unordered_map<std::string, std::string> result;
-  ParsingStrategy* strategy = nullptr;
+TodayParsingStrategy::TodayParsingStrategy(TimeProvider& time_provider)
+    : time_provider_(time_provider) {}
 
+AverageParsingStrategy::AverageParsingStrategy(TimeProvider& time_provider)
+    : time_provider_(time_provider) {}
+
+Parser::Parser(parser::Strategy parsing_strategy, TimeProvider& time_provider) {
   if (parsing_strategy == Strategy::AVERAGE_MARKS) {
-    strategy = new AverageParsingStrategy();
+    strategy_ = std::make_unique<AverageParsingStrategy>(time_provider);
   } else if (parsing_strategy == Strategy::TODAY_MARKS) {
-    strategy = new TodayParsingStrategy();
+    strategy_ = std::make_unique<TodayParsingStrategy>(time_provider);
   }
+}
 
-  if (strategy) {
-      strategy->Parse(html, result);
-      delete strategy;
+Parser::Parser(parser::Strategy parsing_strategy) {
+  if (parsing_strategy == Strategy::AVERAGE_MARKS) {
+    strategy_ = std::make_unique<AverageParsingStrategy>(time_provider_);
+  } else if (parsing_strategy == Strategy::TODAY_MARKS) {
+    strategy_ = std::make_unique<TodayParsingStrategy>(time_provider_);
   }
+}
+
+std::unordered_map<std::string, std::string> Parser::Parse(
+    std::string html) const {
+  std::unordered_map<std::string, std::string> result;
+
+  strategy_->Parse(html, result);
 
   return result;
 }

@@ -94,7 +94,8 @@ target_link_libraries(${PROJECT_NAME} PRIVATE ${PROJECT_NAME}_objs)
 
 # Unit Tests
 add_executable(${PROJECT_NAME}_unittest
-        src/hello_test.cpp
+        src/parser_tests/parser_tests.cpp
+        src/parser_tests/mocked_time_provider.cpp
 
 )
 
