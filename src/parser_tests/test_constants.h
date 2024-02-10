@@ -1,7 +1,9 @@
-#include <string>
+#include <string_view>
 
 namespace test_constants {
-    std::string html = R"(
+
+struct test_html {
+  static constexpr std::string_view html = R"(
     <!DOCTYPE html>
     <html><head><meta name="hmac-token-name" content="Ajax-Token">
 
@@ -1090,4 +1092,5 @@ namespace test_constants {
 
 
     <div class="offline-ui offline-ui-up"><div class="offline-ui-content"></div><a href="" class="offline-ui-retry"></a></div></body></html>)";
+};
 }

@@ -7,11 +7,13 @@
 UTEST(ParserTestSuite, TodayMarksNoLessons) {
   using namespace std::literals;
 
+  std::string html(test_constants::test_html::html);
+
   MockedTimeProvider time_provider;
   time_provider.SetDate("11.11.2022"s);
 
   parser::Parser parser(parser::Strategy::TODAY_MARKS, time_provider);
-  std::unordered_map<std::string, std::string> result = parser.Parse(test_constants::html);
+  std::unordered_map<std::string, std::string> result = parser.Parse(html);
 
   UASSERT(result.empty());
 }
@@ -19,11 +21,13 @@ UTEST(ParserTestSuite, TodayMarksNoLessons) {
 UTEST(ParserTestSuite, TodayMarksOneLesson) {
   using namespace std::literals;
 
+  std::string html(test_constants::test_html::html);
+
   MockedTimeProvider time_provider;
   time_provider.SetDate("28.10.2022"s);
 
   parser::Parser parser(parser::Strategy::TODAY_MARKS, time_provider);
-  std::unordered_map<std::string, std::string> result = parser.Parse(test_constants::html);
+  std::unordered_map<std::string, std::string> result = parser.Parse(html);
 
   UASSERT(!result.empty());
   UASSERT(result.size() == 1);
@@ -34,7 +38,7 @@ UTEST(ParserTestSuite, TodayMarksOneLesson) {
 
 
   time_provider.SetDate("26.04.2023"s);
-  result = parser.Parse(test_constants::html);
+  result = parser.Parse(html);
 
   UASSERT(!result.empty());
   UASSERT(result.size() == 1);
@@ -44,7 +48,7 @@ UTEST(ParserTestSuite, TodayMarksOneLesson) {
   result.clear();
 
   time_provider.SetDate("15.10.2022"s);
-  result = parser.Parse(test_constants::html);
+  result = parser.Parse(html);
 
   UASSERT(!result.empty());
   UASSERT(result.size() == 1);
@@ -57,11 +61,13 @@ UTEST(ParserTestSuite, TodayMarksOneLesson) {
 UTEST(ParserTestSuite, TodayMarksTwoLessons) {
   using namespace std::literals;
 
+  std::string html(test_constants::test_html::html);
+
   MockedTimeProvider time_provider;
   time_provider.SetDate("31.10.2022"s);
 
   parser::Parser parser(parser::Strategy::TODAY_MARKS, time_provider);
-  std::unordered_map<std::string, std::string> result = parser.Parse(test_constants::html);
+  std::unordered_map<std::string, std::string> result = parser.Parse(html);
 
   UASSERT(!result.empty());
   UASSERT(result.size() == 2);
@@ -74,7 +80,7 @@ UTEST(ParserTestSuite, TodayMarksTwoLessons) {
 
 
   time_provider.SetDate("27.10.2022"s);
-  result = parser.Parse(test_constants::html);
+  result = parser.Parse(html);
 
   UASSERT(!result.empty());
   UASSERT(result.size() == 2);
@@ -88,12 +94,14 @@ UTEST(ParserTestSuite, TodayMarksTwoLessons) {
 UTEST(ParserTestSuite, AverageMarksQuarters) {
   using namespace std::literals;
 
+  std::string html(test_constants::test_html::html);
+
   MockedTimeProvider time_provider;
 
   time_provider.SetMonth(9);
 
   parser::Parser parser(parser::Strategy::AVERAGE_MARKS, time_provider);
-  std::unordered_map<std::string, std::string> result = parser.Parse(test_constants::html);
+  std::unordered_map<std::string, std::string> result = parser.Parse(html);
 
   UASSERT(!result.empty());
   UASSERT(result.size() == 3);
@@ -104,7 +112,7 @@ UTEST(ParserTestSuite, AverageMarksQuarters) {
   result.clear();
 
   time_provider.SetMonth(11);
-  result = parser.Parse(test_constants::html);
+  result = parser.Parse(html);
 
   UASSERT(!result.empty());
   UASSERT(result.size() == 3);
@@ -115,7 +123,7 @@ UTEST(ParserTestSuite, AverageMarksQuarters) {
   result.clear();
 
   time_provider.SetMonth(3);
-  result = parser.Parse(test_constants::html);
+  result = parser.Parse(html);
 
   UASSERT(!result.empty());
   UASSERT(result.size() == 3);
@@ -127,7 +135,7 @@ UTEST(ParserTestSuite, AverageMarksQuarters) {
 
 
   time_provider.SetMonth(5);
-  result = parser.Parse(test_constants::html);
+  result = parser.Parse(html);
 
   UASSERT(!result.empty());
   UASSERT(result.size() == 3);
@@ -138,7 +146,7 @@ UTEST(ParserTestSuite, AverageMarksQuarters) {
   result.clear();
 
   time_provider.SetMonth(8);
-  result = parser.Parse(test_constants::html);
+  result = parser.Parse(html);
 
   UASSERT(result.empty());
 

@@ -206,6 +206,8 @@ void AverageParsingStrategy::Parse(
   GumboNode* mobile_table = FindTag(root, mobile_path);
 
   FindAverageMarks(mobile_table, average_marks);
+
+  gumbo_destroy_output(&kGumboDefaultOptions, output);
 }
 
 void TodayParsingStrategy::GetPeriodsMarks(GumboNode* tag_marks,
@@ -303,6 +305,8 @@ void TodayParsingStrategy::Parse(
   GumboNode* full_table = FindTag(root, full_path);
 
   FindTodayMarks(full_table, today_marks);
+  
+  gumbo_destroy_output(&kGumboDefaultOptions, output);
 }
 
 TodayParsingStrategy::TodayParsingStrategy(TimeProvider& time_provider)
