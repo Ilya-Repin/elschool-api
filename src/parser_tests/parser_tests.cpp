@@ -2,24 +2,16 @@
 #include "userver/utest/utest.hpp"
 #include "../parser/parser.hpp"
 #include "mocked_time_provider.hpp"
+#include "test_constants.h"
 
 UTEST(ParserTestSuite, TodayMarksNoLessons) {
   using namespace std::literals;
-
-  std::ifstream file("test.html");
-
-  UASSERT(file.is_open());
-
-  std::string html((std::istreambuf_iterator<char>(file)),
-                   std::istreambuf_iterator<char>());
-
-  file.close();
 
   MockedTimeProvider time_provider;
   time_provider.SetDate("11.11.2022"s);
 
   parser::Parser parser(parser::Strategy::TODAY_MARKS, time_provider);
-  std::unordered_map<std::string, std::string> result = parser.Parse(html);
+  std::unordered_map<std::string, std::string> result = parser.Parse(test_constants::html);
 
   UASSERT(result.empty());
 }
@@ -27,19 +19,11 @@ UTEST(ParserTestSuite, TodayMarksNoLessons) {
 UTEST(ParserTestSuite, TodayMarksOneLesson) {
   using namespace std::literals;
 
-  std::ifstream file("test.html");
-
-  UASSERT(file.is_open());
-
-  std::string html((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
-
-  file.close();
-
   MockedTimeProvider time_provider;
   time_provider.SetDate("28.10.2022"s);
 
   parser::Parser parser(parser::Strategy::TODAY_MARKS, time_provider);
-  std::unordered_map<std::string, std::string> result = parser.Parse(html);
+  std::unordered_map<std::string, std::string> result = parser.Parse(test_constants::html);
 
   UASSERT(!result.empty());
   UASSERT(result.size() == 1);
@@ -73,19 +57,11 @@ UTEST(ParserTestSuite, TodayMarksOneLesson) {
 UTEST(ParserTestSuite, TodayMarksTwoLessons) {
   using namespace std::literals;
 
-  std::ifstream file("test.html");
-
-  UASSERT(file.is_open());
-
-  std::string html((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
-
-  file.close();
-
   MockedTimeProvider time_provider;
   time_provider.SetDate("31.10.2022"s);
 
   parser::Parser parser(parser::Strategy::TODAY_MARKS, time_provider);
-  std::unordered_map<std::string, std::string> result = parser.Parse(html);
+  std::unordered_map<std::string, std::string> result = parser.Parse(test_constants::html);
 
   UASSERT(!result.empty());
   UASSERT(result.size() == 2);
@@ -109,23 +85,15 @@ UTEST(ParserTestSuite, TodayMarksTwoLessons) {
 
 }
 
-UTEST(ParserTestSuite, AverageMarksQuarters ) {
+UTEST(ParserTestSuite, AverageMarksQuarters) {
   using namespace std::literals;
-
-  std::ifstream file("test.html");
-
-  UASSERT(file.is_open());
-
-  std::string html((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
-
-  file.close();
 
   MockedTimeProvider time_provider;
 
   time_provider.SetMonth(9);
 
   parser::Parser parser(parser::Strategy::AVERAGE_MARKS, time_provider);
-  std::unordered_map<std::string, std::string> result = parser.Parse(html);
+  std::unordered_map<std::string, std::string> result = parser.Parse(test_constants::html);
 
   UASSERT(!result.empty());
   UASSERT(result.size() == 3);
