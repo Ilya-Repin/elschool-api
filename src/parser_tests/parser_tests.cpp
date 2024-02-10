@@ -34,7 +34,7 @@ UTEST(ParserTestSuite, TodayMarksOneLesson) {
 
 
   time_provider.SetDate("26.04.2023"s);
-  result = parser.Parse(html);
+  result = parser.Parse(test_constants::html);
 
   UASSERT(!result.empty());
   UASSERT(result.size() == 1);
@@ -44,7 +44,7 @@ UTEST(ParserTestSuite, TodayMarksOneLesson) {
   result.clear();
 
   time_provider.SetDate("15.10.2022"s);
-  result = parser.Parse(html);
+  result = parser.Parse(test_constants::html);
 
   UASSERT(!result.empty());
   UASSERT(result.size() == 1);
@@ -74,7 +74,7 @@ UTEST(ParserTestSuite, TodayMarksTwoLessons) {
 
 
   time_provider.SetDate("27.10.2022"s);
-  result = parser.Parse(html);
+  result = parser.Parse(test_constants::html);
 
   UASSERT(!result.empty());
   UASSERT(result.size() == 2);
@@ -104,7 +104,7 @@ UTEST(ParserTestSuite, AverageMarksQuarters) {
   result.clear();
 
   time_provider.SetMonth(11);
-  result = parser.Parse(html);
+  result = parser.Parse(test_constants::html);
 
   UASSERT(!result.empty());
   UASSERT(result.size() == 3);
@@ -115,7 +115,7 @@ UTEST(ParserTestSuite, AverageMarksQuarters) {
   result.clear();
 
   time_provider.SetMonth(3);
-  result = parser.Parse(html);
+  result = parser.Parse(test_constants::html);
 
   UASSERT(!result.empty());
   UASSERT(result.size() == 3);
@@ -127,7 +127,7 @@ UTEST(ParserTestSuite, AverageMarksQuarters) {
 
 
   time_provider.SetMonth(5);
-  result = parser.Parse(html);
+  result = parser.Parse(test_constants::html);
 
   UASSERT(!result.empty());
   UASSERT(result.size() == 3);
@@ -138,7 +138,7 @@ UTEST(ParserTestSuite, AverageMarksQuarters) {
   result.clear();
 
   time_provider.SetMonth(8);
-  result = parser.Parse(html);
+  result = parser.Parse(test_constants::html);
 
   UASSERT(result.empty());
 

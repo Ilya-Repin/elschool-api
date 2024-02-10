@@ -1,3 +1,5 @@
+#include <string>
+
 namespace test_constants {
     std::string html = R"(
     <!DOCTYPE html>
