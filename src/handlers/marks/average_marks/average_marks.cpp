@@ -12,7 +12,7 @@ AverageMarks::AverageMarks(const components::ComponentConfig& config,
       http_client_{context.FindComponent<userver::components::HttpClient>()
                        .GetHttpClient()},
       token_manager_(context.FindComponent<token_manager::TokenManager>()),
-      parser_() {}
+      parser_(parser::Strategy::AVERAGE_MARKS) {}
 
 std::string AverageMarks::HandleRequestThrow(
     const userver::server::http::HttpRequest& request,
@@ -52,7 +52,7 @@ std::string AverageMarks::HandleRequestThrow(
 
   if (response->IsOk()) {
     try {
-      marks = parser_.Parse(response->body(), parser::Strategy::AVERAGE_MARKS);
+      marks = parser_.Parse(response->body());
     } catch (exceptions::ParsingException& e) {
       request.SetResponseStatus(
           userver::server::http::HttpStatus::kInternalServerError);

@@ -7,3 +7,4 @@ is-testing: false
 server-port: 8080
 
 dbconnection: 'postgresql://user:password@host:port/db'
+

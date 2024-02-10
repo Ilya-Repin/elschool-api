@@ -11,7 +11,7 @@ TodayMarks::TodayMarks(const components::ComponentConfig& config,
       http_client_{context.FindComponent<userver::components::HttpClient>()
                        .GetHttpClient()},
       token_manager_(context.FindComponent<token_manager::TokenManager>()),
-      parser_() {}
+      parser_(parser::Strategy::TODAY_MARKS) {}
 
 std::string TodayMarks::HandleRequestThrow(
     const userver::server::http::HttpRequest& request,
@@ -58,7 +58,7 @@ std::string TodayMarks::HandleRequestThrow(
 
   if (response->IsOk()) {
     try {
-      marks = parser_.Parse(response->body(), parser::Strategy::TODAY_MARKS);
+      marks = parser_.Parse(response->body());
     } catch (exceptions::ParsingException& e) {
       request.SetResponseStatus(
           userver::server::http::HttpStatus::kInternalServerError);
