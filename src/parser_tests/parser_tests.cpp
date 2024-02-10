@@ -6,7 +6,7 @@
 UTEST(ParserTestSuite, TodayMarksNoLessons) {
   using namespace std::literals;
 
-  std::ifstream file("./src/parser_tests/test.html");
+  std::ifstream file("test.html");
 
   UASSERT(file.is_open());
 
@@ -27,7 +27,7 @@ UTEST(ParserTestSuite, TodayMarksNoLessons) {
 UTEST(ParserTestSuite, TodayMarksOneLesson) {
   using namespace std::literals;
 
-  std::ifstream file("./src/parser_tests/test.html");
+  std::ifstream file("test.html");
 
   UASSERT(file.is_open());
 
@@ -73,7 +73,7 @@ UTEST(ParserTestSuite, TodayMarksOneLesson) {
 UTEST(ParserTestSuite, TodayMarksTwoLessons) {
   using namespace std::literals;
 
-  std::ifstream file("./src/parser_tests/test.html");
+  std::ifstream file("test.html");
 
   UASSERT(file.is_open());
 
@@ -112,7 +112,7 @@ UTEST(ParserTestSuite, TodayMarksTwoLessons) {
 UTEST(ParserTestSuite, AverageMarksQuarters ) {
   using namespace std::literals;
 
-  std::ifstream file("./src/parser_tests/test.html");
+  std::ifstream file("test.html");
 
   UASSERT(file.is_open());
 
