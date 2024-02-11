@@ -99,7 +99,7 @@ add_executable(${PROJECT_NAME}_unittest
         utests/parser_tests/mocked_time_provider.cpp
 )
 
-target_link_libraries(${PROJECT_NAME}_unittest PRIVATE  ${PROJECT_NAME}_objs userver-utest)
+target_link_libraries(${PROJECT_NAME}_unittest PRIVATE  ${PROJECT_NAME}_objs ${BOOST_UUID_INCLUDE_DIR} userver-utest)
 add_google_tests(${PROJECT_NAME}_unittest)
 
 
