@@ -5,7 +5,7 @@
 #include <optional>
 #include <string>
 #include <unordered_map>
-#include "userver/engine/mutex.hpp"
+#include <userver/engine/shared_mutex.hpp>
 
 namespace token_manager {
 
@@ -20,11 +20,13 @@ class TokenCache {
  public:
   static TokenCache& GetInstance();
 
+  void HeatCache(std::unordered_map<std::string, Token> firewood);
   std::optional<std::string> FindToken(boost::uuids::uuid uuid);
   void AddToken(boost::uuids::uuid uuid, std::string token);
   void InvalidateToken(boost::uuids::uuid uuid);
   std::size_t InvalidateOldTokens();
   std::size_t InvalidateAllTokens();
+  bool IsInvalidatingOldTokens();
 
  private:
   TokenCache() = default;
@@ -35,6 +37,7 @@ class TokenCache {
 
 
   std::unordered_map<std::string, Token> tokens_;
-  engine::Mutex mutex_;
+  engine::SharedMutex mutex_;
+  std::atomic<bool> invalidating_old_{false};
 };
 }  // namespace token_manager

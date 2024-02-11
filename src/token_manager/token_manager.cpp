@@ -20,8 +20,7 @@ TokenManager::TokenManager(const components::ComponentConfig& config,
                       .FindComponent<userver::components::Postgres>(
                           "postgres-elschool-db")
                       .GetCluster()),
-      token_cache_(TokenCache::GetInstance()) {
-}
+      token_cache_(TokenCache::GetInstance()) {}
 
 std::size_t TokenManager::InvalidateTokenGroup(TokenGroupOption option) {
   std::size_t amount = 0;
@@ -35,11 +34,11 @@ std::size_t TokenManager::InvalidateTokenGroup(TokenGroupOption option) {
   return amount;
 }
 
-void TokenManager::Invalidate(const boost::uuids::uuid &uuid) {
+void TokenManager::Invalidate(const boost::uuids::uuid& uuid) {
   token_cache_.InvalidateToken(uuid);
 }
 
-bool TokenManager::CheckToken(std::string token)  {
+bool TokenManager::CheckToken(std::string token) {
   std::unordered_map<std::string, std::string> cookies;
   cookies["JWToken"s] = token;
 
@@ -54,25 +53,26 @@ bool TokenManager::CheckToken(std::string token)  {
          response->status_code() == clients::http::Status::OK;
 }
 
-std::string TokenManager::GetToken(const std::string &id) {
+std::string TokenManager::GetToken(const std::string& id) {
   boost::uuids::uuid uuid;
 
   try {
     boost::uuids::string_generator gen;
     uuid = gen(id);
-  } catch(std::exception& e) {
+  } catch (std::exception& e) {
     throw std::invalid_argument("Received id is not a uuid!"s);
   }
 
+  if (!token_cache_.IsInvalidatingOldTokens()) {
+    std::optional<std::string> found = token_cache_.FindToken(uuid);
+    if (found) {
+      bool result = CheckToken(*found);
 
-  std::optional<std::string> found = token_cache_.FindToken(uuid);
-  if (found) {
-    bool result = CheckToken(*found);
-
-    if (result) {
-      return *found;
-    } else {
-      token_cache_.InvalidateToken(uuid);
+      if (result) {
+        return *found;
+      } else {
+        token_cache_.InvalidateToken(uuid);
+      }
     }
   }
 
@@ -82,8 +82,10 @@ std::string TokenManager::GetToken(const std::string &id) {
 
   std::string login, password;
 
-  auto result = pg_cluster_->Execute(userver::storages::postgres::ClusterHostType::kMaster,
-                       "SELECT login, password FROM elschool_api_schema.elschool_users WHERE id = $1"s, uuid);
+  auto result = pg_cluster_->Execute(
+      userver::storages::postgres::ClusterHostType::kMaster,
+      "SELECT login, password FROM elschool_api_schema.elschool_users WHERE id = $1"s,
+      uuid);
 
   if (!result.IsEmpty()) {
     struct Data {
@@ -115,7 +117,8 @@ std::string TokenManager::GetToken(const std::string &id) {
                       .perform();
 
   if (response->cookies().empty()) {
-    throw exceptions::TokenException("Can't get cookie for user with uuid - "s + id);
+    throw exceptions::TokenException("Can't get cookie for user with uuid - "s +
+                                     id);
   }
 
   std::unordered_map<std::string, std::string> cookies;
@@ -124,10 +127,13 @@ std::string TokenManager::GetToken(const std::string &id) {
   token = cookie_map.at("JWToken"s).Value();
 
   if (token.empty()) {
-    throw exceptions::TokenException("Got empty token from elschool for user with uuid - "s + id);
+    throw exceptions::TokenException(
+        "Got empty token from elschool for user with uuid - "s + id);
   }
 
-  token_cache_.AddToken(uuid, token);
+  if (!token_cache_.IsInvalidatingOldTokens()) {
+    token_cache_.AddToken(uuid, token);
+  }
 
   return token;
 }

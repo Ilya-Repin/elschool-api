@@ -1,7 +1,8 @@
-#include "token_cache.hpp"
 #include <boost/uuid/uuid_io.hpp>
 #include <optional>
+
 #include "../utils/constants_storage.h"
+#include "token_cache.hpp"
 
 namespace token_manager {
 
@@ -14,7 +15,7 @@ TokenCache& TokenCache::GetInstance() {
 std::optional<std::string> TokenCache::FindToken(boost::uuids::uuid uuid) {
   using namespace std::chrono;
 
-  std::lock_guard<engine::Mutex> lock(mutex_);
+  std::shared_lock<engine::SharedMutex> lock(mutex_);
 
   std::string id = boost::uuids::to_string(uuid);
 
@@ -35,7 +36,7 @@ std::optional<std::string> TokenCache::FindToken(boost::uuids::uuid uuid) {
 void TokenCache::AddToken(boost::uuids::uuid uuid, std::string token) {
   using namespace std::chrono;
 
-  std::lock_guard<engine::Mutex> lock(mutex_);
+  std::unique_lock<engine::SharedMutex> lock(mutex_);
 
   uint64_t seconds_since_epoch =
       duration_cast<seconds>(system_clock::now().time_since_epoch()).count();
@@ -46,7 +47,7 @@ void TokenCache::AddToken(boost::uuids::uuid uuid, std::string token) {
 }
 
 void TokenCache::InvalidateToken(boost::uuids::uuid uuid) {
-  std::lock_guard<engine::Mutex> lock(mutex_);
+  std::unique_lock<engine::SharedMutex> lock(mutex_);
   std::string id = boost::uuids::to_string(uuid);
   tokens_.erase(id);
  }
@@ -54,9 +55,12 @@ void TokenCache::InvalidateToken(boost::uuids::uuid uuid) {
 std::size_t TokenCache::InvalidateOldTokens() {
   using namespace std::chrono;
 
-  std::lock_guard<engine::Mutex> lock(mutex_);
+  invalidating_old_ = true;
+
+  std::unique_lock<engine::SharedMutex> lock(mutex_);
   uint64_t seconds_since_epoch =
       duration_cast<seconds>(system_clock::now().time_since_epoch()).count();
+
   std::size_t counter = 0;
 
   for (auto i : tokens_) {
@@ -67,14 +71,28 @@ std::size_t TokenCache::InvalidateOldTokens() {
     }
   }
 
+  invalidating_old_ = false;
+
   return counter;
 }
 
 std::size_t TokenCache::InvalidateAllTokens() {
-  std::lock_guard<engine::Mutex> lock(mutex_);
+  std::unique_lock<engine::SharedMutex> lock(mutex_);
+
   std::size_t size = tokens_.size();
   tokens_.clear();
 
   return size;
 }
+
+bool TokenCache::IsInvalidatingOldTokens() {
+  return invalidating_old_;
+}
+
+void TokenCache::HeatCache(std::unordered_map<std::string, Token> firewood) {
+  std::unique_lock<engine::SharedMutex> lock(mutex_);
+
+  tokens_.insert(firewood.begin(), firewood.end());
+}
+
 }  // namespace token_manager
