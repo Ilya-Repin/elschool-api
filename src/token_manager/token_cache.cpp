@@ -61,19 +61,22 @@ std::size_t TokenCache::InvalidateOldTokens() {
   uint64_t seconds_since_epoch =
       duration_cast<seconds>(system_clock::now().time_since_epoch()).count();
 
-  std::size_t counter = 0;
+  std::vector<std::string> keys_to_delete;
 
   for (auto i : tokens_) {
     if (seconds_since_epoch - i.second.seconds_since_epoch >
         constants::tokens::two_days_in_seconds) {
-      tokens_.erase(i.first);
-      ++counter;
-    }
+      keys_to_delete.push_back(i.first);
+      }
+  }
+
+  for (auto key : keys_to_delete) {
+    tokens_.erase(key);
   }
 
   invalidating_old_ = false;
 
-  return counter;
+  return keys_to_delete.size();
 }
 
 std::size_t TokenCache::InvalidateAllTokens() {
