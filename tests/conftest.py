@@ -4,9 +4,9 @@ import pytest
 
 from testsuite.databases.pgsql import discover
 
-
 pytest_plugins = ['pytest_userver.plugins.postgresql']
 USERVER_CONFIG_HOOKS = ['userver_config_elschool_url']
+
 
 @pytest.fixture(scope='session')
 def service_source_dir():
