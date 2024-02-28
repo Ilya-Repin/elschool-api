@@ -32,8 +32,9 @@ async def test_add_user(service_client, mockserver, login, password, status):
     @mockserver.handler('elschool.ru/logon/index')
     def _mock_logon_index_post(request):
         assert request.method == 'POST'
-
+        assert len(request.form) == 3
         # if request.args['login'] == 'test_user' and request.args['password'] == 'test_password':
+
         return mockserver.make_response('privateoffice', content_type='text/html', status=302)
         # else:
         #    return mockserver.make_response('', content_type='text/html', status=302)
