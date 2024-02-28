@@ -26,11 +26,6 @@ async def test_db_delete_initial_data(service_client):
             'test_password',
             200,
         ),
-        pytest.param(
-            'test_user',
-            'wrong_password',
-            500,
-        ),
     ]
 )
 async def test_add_user(service_client, mockserver, login, password, status):

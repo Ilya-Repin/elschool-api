@@ -133,7 +133,7 @@ bool UserManager::DeleteUserData(std::string id) {
 bool UserManager::CheckUserData(std::string login, std::string password) const {
   std::string data =
       "login="s + login + "&password="s + password + "&GoogleAuthCode="s;
-
+  LOG_CRITICAL() << "INPUT " << login << " " << password;
   auto response = http_client_.CreateRequest()
                       .follow_redirects(false)
                       .post(elschool_url_ + std::string(constants::Paths::path_logon))
@@ -149,7 +149,7 @@ bool UserManager::CheckUserData(std::string login, std::string password) const {
     return (response->body().find("privateoffice"s) != std::string::npos);
   }
 
-  throw exceptions::UserException("Error during checking user data!");
+  throw exceptions::UserException("Error during checking user data 2!");
 }
 
 userver::yaml_config::Schema UserManager::GetStaticConfigSchema() {

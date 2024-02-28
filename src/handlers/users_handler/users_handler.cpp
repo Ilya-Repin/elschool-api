@@ -40,7 +40,7 @@ std::string UsersHandler::HandlePostRequest(const userver::server::http::HttpReq
   try {
     CheckArgument(login, "login");
     CheckArgument(password, "password");
-
+    LOG_CRITICAL() << "Arguments checks passed";
     id = user_manager_.AddUserData(login, password);
   } catch (const std::invalid_argument& e) {
     request.SetResponseStatus(userver::server::http::HttpStatus::kBadRequest);
