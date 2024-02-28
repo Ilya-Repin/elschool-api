@@ -21,7 +21,6 @@ std::string TodayMarks::HandleRequestThrow(
   const std::string& uuid = request.GetArg("id");
 
   if (uuid.empty()) {
-    request.SetResponseStatus(userver::server::http::HttpStatus::kBadRequest);
     throw server::handlers::ClientError(
         server::handlers::ExternalBody{"No 'id' argument"s});
   }
@@ -30,12 +29,9 @@ std::string TodayMarks::HandleRequestThrow(
   try {
     JWToken = token_manager_.GetToken(uuid);
   } catch (exceptions::TokenException& e) {
-    request.SetResponseStatus(
-        userver::server::http::HttpStatus::kInternalServerError);
-    throw server::handlers::ClientError(
+    throw server::handlers::InternalServerError(
         server::handlers::ExternalBody{e.what()});
   } catch (std::invalid_argument& e) {
-    request.SetResponseStatus(userver::server::http::HttpStatus::kBadRequest);
     throw server::handlers::ClientError(
         server::handlers::ExternalBody{e.what()});
   }
@@ -61,16 +57,11 @@ std::string TodayMarks::HandleRequestThrow(
     try {
       marks = parser_.Parse(response->body());
     } catch (exceptions::ParsingException& e) {
-      request.SetResponseStatus(
-          userver::server::http::HttpStatus::kInternalServerError);
-
-      throw server::handlers::ClientError(
+      throw server::handlers::InternalServerError(
           server::handlers::ExternalBody{e.what()});
     }
   } else {
-    request.SetResponseStatus(
-        userver::server::http::HttpStatus::kInternalServerError);
-    throw server::handlers::ClientError(
+    throw server::handlers::InternalServerError(
         server::handlers::ExternalBody{"Error during mark's request"s});
   }
 

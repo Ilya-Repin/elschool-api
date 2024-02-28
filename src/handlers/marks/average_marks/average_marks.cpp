@@ -23,7 +23,6 @@ std::string AverageMarks::HandleRequestThrow(
   const std::string& id = request.GetArg("id");
 
   if (id.empty()) {
-    request.SetResponseStatus(userver::server::http::HttpStatus::kBadRequest);
     throw server::handlers::ClientError(
         server::handlers::ExternalBody{"No 'id' argument"s});
   }
@@ -32,9 +31,7 @@ std::string AverageMarks::HandleRequestThrow(
   try {
     JWToken = token_manager_.GetToken(id);
   } catch (exceptions::TokenException& e) {
-    request.SetResponseStatus(
-        userver::server::http::HttpStatus::kInternalServerError);
-    throw server::handlers::ClientError(
+    throw server::handlers::InternalServerError(
         server::handlers::ExternalBody{e.what()});
   }
   std::string headers = GetUrlHeaders(http_client_, JWToken, elschool_url_);
@@ -58,16 +55,11 @@ std::string AverageMarks::HandleRequestThrow(
     try {
       marks = parser_.Parse(response->body());
     } catch (exceptions::ParsingException& e) {
-      request.SetResponseStatus(
-          userver::server::http::HttpStatus::kInternalServerError);
-
-      throw server::handlers::ClientError(
+      throw server::handlers::InternalServerError(
           server::handlers::ExternalBody{e.what()});
     }
   } else {
-    request.SetResponseStatus(
-        userver::server::http::HttpStatus::kInternalServerError);
-    throw server::handlers::ClientError(
+    throw server::handlers::InternalServerError(
         server::handlers::ExternalBody{"Error during mark's request"s});
   }
 
