@@ -4,6 +4,8 @@
 #include "../../../utils/exceptions.h"
 #include "average_marks.hpp"
 
+#include "userver/yaml_config/merge_schemas.hpp"
+
 namespace average_marks {
 
 AverageMarks::AverageMarks(const components::ComponentConfig& config,
@@ -12,6 +14,7 @@ AverageMarks::AverageMarks(const components::ComponentConfig& config,
       http_client_{context.FindComponent<userver::components::HttpClient>()
                        .GetHttpClient()},
       token_manager_(context.FindComponent<token_manager::TokenManager>()),
+      elschool_url_(config["elschool_url"].As<std::string>()),
       parser_(parser::Strategy::AVERAGE_MARKS) {}
 
 std::string AverageMarks::HandleRequestThrow(
@@ -31,12 +34,13 @@ std::string AverageMarks::HandleRequestThrow(
   } catch (exceptions::TokenException& e) {
     request.SetResponseStatus(
         userver::server::http::HttpStatus::kInternalServerError);
-    throw server::handlers::ClientError(server::handlers::ExternalBody{e.what()});
+    throw server::handlers::ClientError(
+        server::handlers::ExternalBody{e.what()});
   }
-  std::string headers = GetUrlHeaders(http_client_, JWToken);
+  std::string headers = GetUrlHeaders(http_client_, JWToken, elschool_url_);
 
   std::string url =
-      std::string(constants::Url::url_marks_without_headers) + headers;
+      elschool_url_ + std::string(constants::Paths::path_marks) + headers;
 
   std::unordered_map<std::string, std::string> cookies;
   cookies["JWToken"s] = JWToken;
@@ -80,6 +84,19 @@ std::string AverageMarks::HandleRequestThrow(
 
 void AppendAverageMarks(userver::components::ComponentList& component_list) {
   component_list.Append<AverageMarks>();
+}
+
+userver::yaml_config::Schema AverageMarks::GetStaticConfigSchema() {
+  return userver::yaml_config::MergeSchemas<server::handlers::HttpHandlerBase>(
+      R"(
+type: object
+description: average marks handler
+additionalProperties: false
+properties:
+    elschool_url:
+        type: string
+        description: url of elschool
+)");
 }
 
 }  // namespace average_marks

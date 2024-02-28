@@ -8,6 +8,7 @@
 #include "userver/components/component_context.hpp"
 #include "userver/http/common_headers.hpp"
 #include "userver/utils/uuid4.hpp"
+#include "userver/yaml_config/merge_schemas.hpp"
 
 namespace {
 
@@ -45,6 +46,7 @@ UserManager::UserManager(const components::ComponentConfig& config,
                       .FindComponent<userver::components::Postgres>(
                           "postgres-elschool-db")
                       .GetCluster()),
+      elschool_url_(config["elschool_url"].As<std::string>()),
       token_manager_(context.FindComponent<token_manager::TokenManager>()) {}
 
 std::optional<std::string> UserManager::AddUserData(std::string login,
@@ -134,7 +136,7 @@ bool UserManager::CheckUserData(std::string login, std::string password) const {
 
   auto response = http_client_.CreateRequest()
                       .follow_redirects(false)
-                      .post(std::string(constants::Url::url_logon))
+                      .post(elschool_url_ + std::string(constants::Paths::path_logon))
                       .data(data)
                       .headers({
                           {userver::http::headers::kContentLength,
@@ -148,6 +150,19 @@ bool UserManager::CheckUserData(std::string login, std::string password) const {
   }
 
   throw exceptions::UserException("Error during checking user data!");
+}
+
+userver::yaml_config::Schema UserManager::GetStaticConfigSchema() {
+  return userver::yaml_config::MergeSchemas<userver::components::LoggableComponentBase>(
+      R"(
+type: object
+description: user manager
+additionalProperties: false
+properties:
+    elschool_url:
+        type: string
+        description: url of elschool
+)");
 }
 
 void AppendUserManager(userver::components::ComponentList& component_list) {

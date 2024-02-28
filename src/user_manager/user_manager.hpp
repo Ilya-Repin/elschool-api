@@ -26,12 +26,14 @@ class UserManager : public components::LoggableComponentBase {
   bool UpdateUserData(std::string id, std::string new_login, std::string new_password);
   bool DeleteUserData(std::string id);
 
+  static userver::yaml_config::Schema GetStaticConfigSchema();
 
  private:
   bool CheckUserData(std::string login, std::string password) const;
 
   token_manager::TokenManager& token_manager_;
   clients::http::Client& http_client_;
+  std::string elschool_url_;
   storages::postgres::ClusterPtr pg_cluster_;
 };
 

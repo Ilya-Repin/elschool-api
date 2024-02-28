@@ -56,12 +56,14 @@ components_manager:
             method: POST
             task_processor: main-task-processor
             parse_args_from_body: true
+            elschool_url: $elschool_url
 
         handler-today-marks:
             path: /v1/today_marks
             method: POST
             task_processor: main-task-processor
             parse_args_from_body: true
+            elschool_url: $elschool_url
 
         handler-invalidate-token:
             path: /v1/token/invalidate
@@ -76,7 +78,9 @@ components_manager:
             parse_args_from_body: true
 
         token-manager:
+            elschool_url: $elschool_url
         user-manager:
+            elschool_url: $elschool_url
 
         postgres-elschool-db:
             dbconnection: $dbconnection
