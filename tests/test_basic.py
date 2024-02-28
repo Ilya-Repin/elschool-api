@@ -44,7 +44,7 @@ async def test_add_user(service_client, mockserver, login, password, status):
 
     response = await service_client.post(
         '/v1/users',
-        params={'login': login, 'password': password},
+        data={'login': login, 'password': password},
     )
 
     if status == 200:
