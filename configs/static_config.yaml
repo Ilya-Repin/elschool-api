@@ -35,7 +35,7 @@ components_manager:
         testsuite-support: {}
 
         http-client:
-            load-enabled: true #$is-testing
+            load-enabled: true
             fs-task-processor: fs-task-processor
 
         tests-control:
@@ -53,14 +53,14 @@ components_manager:
 
         handler-average-marks:
             path: /v1/average_marks
-            method: POST
+            method: GET
             task_processor: main-task-processor
             parse_args_from_body: true
             elschool_url: $elschool_url
 
         handler-today-marks:
             path: /v1/today_marks
-            method: POST
+            method: GET
             task_processor: main-task-processor
             parse_args_from_body: true
             elschool_url: $elschool_url

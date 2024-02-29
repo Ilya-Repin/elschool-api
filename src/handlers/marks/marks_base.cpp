@@ -30,4 +30,4 @@ std::string MarksBase::GetUrlHeaders(userver::clients::http::Client& http_client
   return user_headers;
 }
 
-}
+}  // namespace marks_base

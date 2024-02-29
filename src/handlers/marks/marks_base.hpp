@@ -13,4 +13,4 @@ class MarksBase {
   std::string GetUrlHeaders(userver::clients::http::Client& http_client, std::string token, std::string elschool_url) const;
 };
 
-}
+}  // namespace base_marks

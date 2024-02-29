@@ -32,4 +32,4 @@ class TokenHandler final : public server::handlers::HttpHandlerBase {
 
 void AppendTokenHandler(userver::components::ComponentList& component_list);
 
-}  // namespace service_template
+}  // namespace token_handler

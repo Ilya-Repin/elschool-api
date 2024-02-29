@@ -40,4 +40,4 @@ class TodayMarks final : public server::handlers::HttpHandlerBase, marks_base::M
 
 void AppendTodayMarks(userver::components::ComponentList& component_list);
 
-}  // namespace service_template
+}  // namespace today_marks

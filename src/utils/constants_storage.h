@@ -16,4 +16,4 @@ namespace constants {
   struct tokens {
     static constexpr uint64_t two_days_in_seconds = 172800;
   };
-}
+}  // namespace constants
