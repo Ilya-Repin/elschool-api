@@ -77,7 +77,8 @@ async def test_update_user(service_client, mockserver):
 
     response = await service_client.put(
         '/v1/users',
-        data={'login': 'login', 'password': "new_password", 'id': 'e5e79b0d1e2c49f097db4930c9ea8c43'},
+        data={'login': 'login', 'password': "new_password",
+              'id': 'e5e79b0d1e2c49f097db4930c9ea8c43'},
     )
 
     assert response.status == 200
