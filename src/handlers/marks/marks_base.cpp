@@ -3,12 +3,12 @@
 
 namespace marks_base {
 
-std::string MarksBase::GetUrlHeaders(userver::clients::http::Client& http_client, std::string token) const {
+std::string MarksBase::GetUrlHeaders(userver::clients::http::Client& http_client, std::string token, std::string elschool_url) const {
   std::unordered_map<std::string, std::string> cookies;
   cookies["JWToken"s] = token;
   auto response = http_client.CreateRequest()
                       .follow_redirects(false)
-                      .get(std::string(constants::Url::url_diaries))
+                      .get(elschool_url + std::string(constants::Paths::path_diaries))
                       .cookies(cookies)
                       .timeout(std::chrono::seconds{15})
                       .perform();
@@ -30,4 +30,4 @@ std::string MarksBase::GetUrlHeaders(userver::clients::http::Client& http_client
   return user_headers;
 }
 
-}
+}  // namespace marks_base

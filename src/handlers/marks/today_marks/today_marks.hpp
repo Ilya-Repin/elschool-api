@@ -29,8 +29,10 @@ class TodayMarks final : public server::handlers::HttpHandlerBase, marks_base::M
       const userver::server::http::HttpRequest& request,
       userver::server::request::RequestContext& context) const override;
 
- private:
+  static userver::yaml_config::Schema GetStaticConfigSchema();
 
+ private:
+  std::string elschool_url_;
   userver::clients::http::Client& http_client_;
   token_manager::TokenManager& token_manager_;
   parser::Parser parser_;
@@ -38,4 +40,4 @@ class TodayMarks final : public server::handlers::HttpHandlerBase, marks_base::M
 
 void AppendTodayMarks(userver::components::ComponentList& component_list);
 
-}  // namespace service_template
+}  // namespace today_marks

@@ -35,4 +35,4 @@ void AppendTokenHandler(userver::components::ComponentList& component_list) {
   component_list.Append<TokenHandler>();
 }
 
-}  // namespace average_marks
+}  // namespace token_handler

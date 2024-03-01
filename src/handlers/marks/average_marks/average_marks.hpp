@@ -29,8 +29,11 @@ class AverageMarks final : public server::handlers::HttpHandlerBase, marks_base:
       const userver::server::http::HttpRequest& request,
       userver::server::request::RequestContext& context) const override;
 
+  static userver::yaml_config::Schema GetStaticConfigSchema();
+
  private:
   userver::clients::http::Client& http_client_;
+  std::string elschool_url_;
   token_manager::TokenManager& token_manager_;
   parser::Parser parser_;
 };

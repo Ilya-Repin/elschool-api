@@ -2,6 +2,7 @@
 #include "../../../utils/exceptions.h"
 #include "userver/clients/http/component.hpp"
 #include "userver/components/component_context.hpp"
+#include "userver/yaml_config/merge_schemas.hpp"
 
 namespace today_marks {
 
@@ -11,6 +12,7 @@ TodayMarks::TodayMarks(const components::ComponentConfig& config,
       http_client_{context.FindComponent<userver::components::HttpClient>()
                        .GetHttpClient()},
       token_manager_(context.FindComponent<token_manager::TokenManager>()),
+      elschool_url_(config["elschool_url"].As<std::string>()),
       parser_(parser::Strategy::TODAY_MARKS) {}
 
 std::string TodayMarks::HandleRequestThrow(
@@ -19,7 +21,6 @@ std::string TodayMarks::HandleRequestThrow(
   const std::string& uuid = request.GetArg("id");
 
   if (uuid.empty()) {
-    request.SetResponseStatus(userver::server::http::HttpStatus::kBadRequest);
     throw server::handlers::ClientError(
         server::handlers::ExternalBody{"No 'id' argument"s});
   }
@@ -28,21 +29,17 @@ std::string TodayMarks::HandleRequestThrow(
   try {
     JWToken = token_manager_.GetToken(uuid);
   } catch (exceptions::TokenException& e) {
-    request.SetResponseStatus(
-        userver::server::http::HttpStatus::kInternalServerError);
-    throw server::handlers::ClientError(
+    throw server::handlers::InternalServerError(
         server::handlers::ExternalBody{e.what()});
   } catch (std::invalid_argument& e) {
-    request.SetResponseStatus(
-        userver::server::http::HttpStatus::kBadRequest);
     throw server::handlers::ClientError(
         server::handlers::ExternalBody{e.what()});
   }
 
-  std::string headers = GetUrlHeaders(http_client_, JWToken);
+  std::string headers = GetUrlHeaders(http_client_, JWToken, elschool_url_);
 
   std::string url =
-      std::string(constants::Url::url_marks_without_headers) + headers;
+      elschool_url_ + std::string(constants::Paths::path_marks) + headers;
 
   std::unordered_map<std::string, std::string> cookies;
   cookies["JWToken"s] = JWToken;
@@ -60,16 +57,11 @@ std::string TodayMarks::HandleRequestThrow(
     try {
       marks = parser_.Parse(response->body());
     } catch (exceptions::ParsingException& e) {
-      request.SetResponseStatus(
-          userver::server::http::HttpStatus::kInternalServerError);
-
-      throw server::handlers::ClientError(
+      throw server::handlers::InternalServerError(
           server::handlers::ExternalBody{e.what()});
     }
   } else {
-    request.SetResponseStatus(
-        userver::server::http::HttpStatus::kInternalServerError);
-    throw server::handlers::ClientError(
+    throw server::handlers::InternalServerError(
         server::handlers::ExternalBody{"Error during mark's request"s});
   }
 
@@ -86,6 +78,19 @@ std::string TodayMarks::HandleRequestThrow(
 
 void AppendTodayMarks(userver::components::ComponentList& component_list) {
   component_list.Append<TodayMarks>();
+}
+
+userver::yaml_config::Schema TodayMarks::GetStaticConfigSchema() {
+  return userver::yaml_config::MergeSchemas<server::handlers::HttpHandlerBase>(
+      R"(
+type: object
+description: today marks handler
+additionalProperties: false
+properties:
+    elschool_url:
+        type: string
+        description: url of elschool
+)");
 }
 
 }  // namespace today_marks

@@ -1,6 +1,6 @@
 #include <fstream>
 #include "../../src/parser/parser.hpp"
-#include "../../tests/test_constants.h"
+#include "../test_constants.h"
 #include "mocked_time_provider.hpp"
 #include "userver/utest/utest.hpp"
 

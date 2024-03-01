@@ -4,8 +4,8 @@ import pytest
 
 from testsuite.databases.pgsql import discover
 
-
 pytest_plugins = ['pytest_userver.plugins.postgresql']
+USERVER_CONFIG_HOOKS = ['userver_config_elschool_url']
 
 
 @pytest.fixture(scope='session')
@@ -30,3 +30,11 @@ def pgsql_local(service_source_dir, pgsql_local_create):
         [service_source_dir.joinpath('postgresql/schemas')],
     )
     return pgsql_local_create(list(databases.values()))
+
+
+@pytest.fixture(scope='session')
+def userver_config_elschool_url(mockserver_info):
+    def do_patch(config_yaml, config_vars):
+        config_vars['elschool_url'] = mockserver_info.url('elschool.ru')
+
+    return do_patch

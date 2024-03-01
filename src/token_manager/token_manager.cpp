@@ -6,6 +6,7 @@
 #include "userver/clients/dns/component.hpp"
 #include "userver/components/component_context.hpp"
 #include "userver/http/common_headers.hpp"
+#include "userver/yaml_config/merge_schemas.hpp"
 
 namespace token_manager {
 
@@ -20,6 +21,7 @@ TokenManager::TokenManager(const components::ComponentConfig& config,
                       .FindComponent<userver::components::Postgres>(
                           "postgres-elschool-db")
                       .GetCluster()),
+      elschool_url_(config["elschool_url"].As<std::string>()),
       token_cache_(TokenCache::GetInstance()) {}
 
 std::size_t TokenManager::InvalidateTokenGroup(TokenGroupOption option) {
@@ -44,7 +46,7 @@ bool TokenManager::CheckToken(std::string token) {
 
   auto response = http_client_.CreateRequest()
                       .follow_redirects(false)
-                      .get(std::string(constants::Url::url_privateoffice))
+                      .get(elschool_url_ + std::string(constants::Paths::path_privateoffice))
                       .cookies(cookies)
                       .timeout(std::chrono::seconds{15})
                       .perform();
@@ -107,7 +109,7 @@ std::string TokenManager::GetToken(const std::string& id) {
 
   auto response = http_client_.CreateRequest()
                       .follow_redirects(false)
-                      .post(std::string(constants::Url::url_logon))
+                      .post(elschool_url_ + std::string(constants::Paths::path_logon))
                       .data(data)
                       .headers({
                           {userver::http::headers::kContentLength,
@@ -136,6 +138,19 @@ std::string TokenManager::GetToken(const std::string& id) {
   }
 
   return token;
+}
+
+userver::yaml_config::Schema TokenManager::GetStaticConfigSchema() {
+  return userver::yaml_config::MergeSchemas<userver::components::LoggableComponentBase>(
+      R"(
+type: object
+description: token manager
+additionalProperties: false
+properties:
+    elschool_url:
+        type: string
+        description: url of elschool
+)");
 }
 
 void AppendTokenManager(userver::components::ComponentList& component_list) {

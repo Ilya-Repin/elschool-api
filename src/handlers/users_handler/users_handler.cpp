@@ -40,15 +40,12 @@ std::string UsersHandler::HandlePostRequest(const userver::server::http::HttpReq
   try {
     CheckArgument(login, "login");
     CheckArgument(password, "password");
-
     id = user_manager_.AddUserData(login, password);
-  } catch (const std::invalid_argument& e) {
-    request.SetResponseStatus(userver::server::http::HttpStatus::kBadRequest);
+  }catch (const std::invalid_argument& e) {
     throw server::handlers::ClientError(
         server::handlers::ExternalBody{e.what()});
   } catch (const exceptions::UserException &e) {
-    request.SetResponseStatus(userver::server::http::HttpStatus::kInternalServerError);
-    throw server::handlers::ClientError(
+    throw server::handlers::InternalServerError(
         server::handlers::ExternalBody{e.what()});
   }
 
@@ -56,9 +53,7 @@ std::string UsersHandler::HandlePostRequest(const userver::server::http::HttpReq
     request.SetResponseStatus(userver::server::http::HttpStatus::kOk);
     return *id;
   } else {
-    request.SetResponseStatus(
-        userver::server::http::HttpStatus::kInternalServerError);
-    throw server::handlers::ClientError(
+    throw server::handlers::InternalServerError(
         server::handlers::ExternalBody{"Failed to add user!"s});
   }
 }

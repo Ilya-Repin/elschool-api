@@ -36,4 +36,4 @@ class UsersHandler final : public server::handlers::HttpHandlerBase {
 
 void AppendUsersHandler(userver::components::ComponentList& component_list);
 
-}  // namespace service_template
+}  // namespace users_handler

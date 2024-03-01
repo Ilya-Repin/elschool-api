@@ -29,9 +29,12 @@ class TokenManager : public components::LoggableComponentBase {
   void Invalidate(const boost::uuids::uuid &uuid);
   std::string GetToken(const std::string& id);
 
+  static userver::yaml_config::Schema GetStaticConfigSchema();
+
  private:
   bool CheckToken(std::string token);
 
+  std::string elschool_url_;
   TokenCache& token_cache_;
   clients::http::Client& http_client_;
   storages::postgres::ClusterPtr pg_cluster_;
