@@ -3,7 +3,7 @@
 #include <chrono>
 #include <thread>
 #include <userver/utest/utest.hpp>
-#include "../../src/token_manager/token_cache.hpp"
+#include "token_manager/token_cache.hpp"
 #include "userver/engine/sleep.hpp"
 
 UTEST(TokenCacheTestSuite, AddInvalidateTokenTest) {

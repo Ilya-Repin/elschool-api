@@ -4,7 +4,6 @@
 #include <userver/server/handlers/tests_control.hpp>
 #include <userver/testsuite/testsuite_support.hpp>
 #include <userver/utils/daemon_run.hpp>
-#include <userver/clients/dns/component.hpp>
 
 #include "handlers/marks/average_marks/average_marks.hpp"
 #include "handlers/marks/today_marks/today_marks.hpp"

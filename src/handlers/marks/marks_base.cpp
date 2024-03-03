@@ -1,11 +1,11 @@
 #include "marks_base.hpp"
-#include "../../utils/constants_storage.h"
 
 namespace marks_base {
 
 std::string MarksBase::GetUrlHeaders(userver::clients::http::Client& http_client, std::string token, std::string elschool_url) const {
   std::unordered_map<std::string, std::string> cookies;
-  cookies["JWToken"s] = token;
+  cookies[constants::Args::JWToken.data()] = token;
+
   auto response = http_client.CreateRequest()
                       .follow_redirects(false)
                       .get(elschool_url + std::string(constants::Paths::path_diaries))

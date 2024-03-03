@@ -43,4 +43,4 @@ class UserException : public std::exception {
  private:
   std::string error_message_;
 };
-} // namespace exceptions
+}  // namespace exceptions

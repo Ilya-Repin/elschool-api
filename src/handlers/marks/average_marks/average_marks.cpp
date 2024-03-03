@@ -1,38 +1,34 @@
-#include "userver/clients/http/component.hpp"
-#include "userver/components/component_context.hpp"
-
-#include "../../../utils/exceptions.h"
 #include "average_marks.hpp"
-
-#include "userver/yaml_config/merge_schemas.hpp"
 
 namespace average_marks {
 
-AverageMarks::AverageMarks(const components::ComponentConfig& config,
-                           const components::ComponentContext& context)
+AverageMarks::AverageMarks(const userver::components::ComponentConfig& config,
+                           const userver::components::ComponentContext& context)
     : HttpHandlerBase(config, context),
       http_client_{context.FindComponent<userver::components::HttpClient>()
                        .GetHttpClient()},
       token_manager_(context.FindComponent<token_manager::TokenManager>()),
-      elschool_url_(config["elschool_url"].As<std::string>()),
-      parser_(parser::Strategy::AVERAGE_MARKS) {}
+      parser_(parser::Strategy::AVERAGE_MARKS),
+      elschool_url_(config[constants::Args::elschool_url].As<std::string>()) {}
+
+// TODO Вынести логику из хэндлера
 
 std::string AverageMarks::HandleRequestThrow(
-    const userver::server::http::HttpRequest& request,
-    userver::server::request::RequestContext& context) const {
-  const std::string& id = request.GetArg("id");
+const userver::server::http::HttpRequest& request,
+      userver::server::request::RequestContext&) const {
+  const std::string& id = request.GetArg(constants::Args::id);
 
   if (id.empty()) {
-    throw server::handlers::ClientError(
-        server::handlers::ExternalBody{"No 'id' argument"s});
+    throw userver::server::handlers::ClientError(
+        userver::server::handlers::ExternalBody{"No 'id' argument"s});
   }
 
   std::string JWToken;
   try {
     JWToken = token_manager_.GetToken(id);
   } catch (exceptions::TokenException& e) {
-    throw server::handlers::InternalServerError(
-        server::handlers::ExternalBody{e.what()});
+    throw userver::server::handlers::InternalServerError(
+        userver::server::handlers::ExternalBody{e.what()});
   }
   std::string headers = GetUrlHeaders(http_client_, JWToken, elschool_url_);
 
@@ -40,7 +36,7 @@ std::string AverageMarks::HandleRequestThrow(
       elschool_url_ + std::string(constants::Paths::path_marks) + headers;
 
   std::unordered_map<std::string, std::string> cookies;
-  cookies["JWToken"s] = JWToken;
+  cookies[constants::Args::JWToken.data()] = JWToken;
 
   auto response = http_client_.CreateRequest()
                       .follow_redirects(false)
@@ -55,15 +51,15 @@ std::string AverageMarks::HandleRequestThrow(
     try {
       marks = parser_.Parse(response->body());
     } catch (exceptions::ParsingException& e) {
-      throw server::handlers::InternalServerError(
-          server::handlers::ExternalBody{e.what()});
+      throw userver::server::handlers::InternalServerError(
+          userver::server::handlers::ExternalBody{e.what()});
     }
   } else {
-    throw server::handlers::InternalServerError(
-        server::handlers::ExternalBody{"Error during mark's request"s});
+    throw userver::server::handlers::InternalServerError(
+        userver::server::handlers::ExternalBody{"Error during mark's request"s});
   }
 
-  formats::json::ValueBuilder builder;
+  userver::formats::json::ValueBuilder builder;
 
   for (auto& i : marks) {
     builder[i.first] = i.second;
@@ -79,7 +75,7 @@ void AppendAverageMarks(userver::components::ComponentList& component_list) {
 }
 
 userver::yaml_config::Schema AverageMarks::GetStaticConfigSchema() {
-  return userver::yaml_config::MergeSchemas<server::handlers::HttpHandlerBase>(
+  return userver::yaml_config::MergeSchemas<userver::server::handlers::HttpHandlerBase>(
       R"(
 type: object
 description: average marks handler

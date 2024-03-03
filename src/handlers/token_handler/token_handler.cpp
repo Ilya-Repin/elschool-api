@@ -1,32 +1,29 @@
 #include "token_handler.hpp"
-#include "userver/clients/http/component.hpp"
-#include "userver/components/component_context.hpp"
 
 namespace token_handler {
 
-TokenHandler::TokenHandler(const components::ComponentConfig& config,
-                           const components::ComponentContext& context)
+TokenHandler::TokenHandler(const userver::components::ComponentConfig& config,
+                           const userver::components::ComponentContext& context)
     : HttpHandlerBase(config, context),
       token_manager_(context.FindComponent<token_manager::TokenManager>()) {}
 
+
 std::string TokenHandler::HandleRequestThrow(
     const userver::server::http::HttpRequest& request,
-    userver::server::request::RequestContext& context) const {
-  const std::string& invalidate = request.GetArg("option");
+    userver::server::request::RequestContext&) const {
+  const std::string& invalidate = request.GetArg(constants::Args::option);
 
   token_manager::TokenGroupOption option;
 
-  std::size_t amount = 0;
-
-  if (invalidate == "all"s) {
-    amount = token_manager_.InvalidateTokenGroup(
-        token_manager::TokenGroupOption::ALL);
-  } else if (invalidate == "old"s) {
-    amount = token_manager_.InvalidateTokenGroup(
-        token_manager::TokenGroupOption::OLD);
+  if (invalidate == constants::Args::all) {
+    option = token_manager::TokenGroupOption::ALL;
+  } else if (invalidate == constants::Args::old) {
+    option = token_manager::TokenGroupOption::OLD;
   }
 
-  std::string response = "Invalidated "s + std::to_string(amount) + " tokens"s;
+  std::size_t amount = token_manager_.InvalidateTokenGroup(option);
+
+  std::string response = fmt::format("Invalidated {} tokens"s, amount);
 
   return response;
 }

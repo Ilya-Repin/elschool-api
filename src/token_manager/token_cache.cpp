@@ -1,7 +1,3 @@
-#include <boost/uuid/uuid_io.hpp>
-#include <optional>
-
-#include "../utils/constants_storage.h"
 #include "token_cache.hpp"
 
 namespace token_manager {
@@ -12,10 +8,15 @@ TokenCache& TokenCache::GetInstance() {
   return token_cache;
 }
 
-std::optional<std::string> TokenCache::FindToken(boost::uuids::uuid uuid) {
+void TokenCache::SetInvalidationTime(const uint64_t& time) {
+  std::unique_lock<userver::engine::SharedMutex> lock(mutex_);
+  token_lifetime_ = time;
+}
+
+std::optional<std::string> TokenCache::FindToken(const boost::uuids::uuid& uuid) {
   using namespace std::chrono;
 
-  std::shared_lock<engine::SharedMutex> lock(mutex_);
+  std::shared_lock<userver::engine::SharedMutex> lock(mutex_);
 
   std::string id = boost::uuids::to_string(uuid);
 
@@ -33,10 +34,10 @@ std::optional<std::string> TokenCache::FindToken(boost::uuids::uuid uuid) {
   return std::nullopt;
 }
 
-void TokenCache::AddToken(boost::uuids::uuid uuid, std::string token) {
+void TokenCache::AddToken(const boost::uuids::uuid& uuid, const std::string& token) {
   using namespace std::chrono;
 
-  std::unique_lock<engine::SharedMutex> lock(mutex_);
+  std::unique_lock<userver::engine::SharedMutex> lock(mutex_);
 
   uint64_t seconds_since_epoch =
       duration_cast<seconds>(system_clock::now().time_since_epoch()).count();
@@ -46,8 +47,8 @@ void TokenCache::AddToken(boost::uuids::uuid uuid, std::string token) {
   tokens_[id] = Token{token, seconds_since_epoch};
 }
 
-void TokenCache::InvalidateToken(boost::uuids::uuid uuid) {
-  std::unique_lock<engine::SharedMutex> lock(mutex_);
+void TokenCache::InvalidateToken(const boost::uuids::uuid& uuid) {
+  std::unique_lock<userver::engine::SharedMutex> lock(mutex_);
   std::string id = boost::uuids::to_string(uuid);
   tokens_.erase(id);
  }
@@ -57,20 +58,20 @@ std::size_t TokenCache::InvalidateOldTokens() {
 
   invalidating_old_ = true;
 
-  std::unique_lock<engine::SharedMutex> lock(mutex_);
+  std::unique_lock<userver::engine::SharedMutex> lock(mutex_);
   uint64_t seconds_since_epoch =
       duration_cast<seconds>(system_clock::now().time_since_epoch()).count();
 
   std::vector<std::string> keys_to_delete;
 
-  for (auto i : tokens_) {
+  for (const auto& i : tokens_) {
     if (seconds_since_epoch - i.second.seconds_since_epoch >
-        constants::tokens::two_days_in_seconds) {
+        token_lifetime_) {
       keys_to_delete.push_back(i.first);
       }
   }
 
-  for (auto key : keys_to_delete) {
+  for (const auto& key : keys_to_delete) {
     tokens_.erase(key);
   }
 
@@ -80,7 +81,7 @@ std::size_t TokenCache::InvalidateOldTokens() {
 }
 
 std::size_t TokenCache::InvalidateAllTokens() {
-  std::unique_lock<engine::SharedMutex> lock(mutex_);
+  std::unique_lock<userver::engine::SharedMutex> lock(mutex_);
 
   std::size_t size = tokens_.size();
   tokens_.clear();
@@ -92,8 +93,8 @@ bool TokenCache::IsInvalidatingOldTokens() {
   return invalidating_old_;
 }
 
-void TokenCache::HeatCache(std::unordered_map<std::string, Token> firewood) {
-  std::unique_lock<engine::SharedMutex> lock(mutex_);
+void TokenCache::HeatCache(const std::unordered_map<std::string, Token>& firewood) {
+  std::unique_lock<userver::engine::SharedMutex> lock(mutex_);
 
   tokens_.insert(firewood.begin(), firewood.end());
 }

@@ -1,8 +1,8 @@
 #include <fstream>
-#include "../../src/parser/parser.hpp"
-#include "../test_constants.h"
+#include "parser/parser.hpp"
 #include "mocked_time_provider.hpp"
 #include "userver/utest/utest.hpp"
+#include "../test_constants.h"
 
 UTEST(ParserTestSuite, TodayMarksNoLessons) {
   using namespace std::literals;

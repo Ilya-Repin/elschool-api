@@ -6,9 +6,18 @@
 #include <userver/storages/postgres/cluster.hpp>
 #include <userver/storages/postgres/component.hpp>
 #include <userver/utils/assert.hpp>
+#include <userver/components/component_context.hpp>
+#include <userver/http/common_headers.hpp>
+#include <userver/utils/uuid4.hpp>
+#include <userver/yaml_config/merge_schemas.hpp>
+#include <boost/uuid/random_generator.hpp>
+#include <boost/uuid/string_generator.hpp>
+#include <boost/uuid/uuid.hpp>
+#include <boost/uuid/uuid_io.hpp>
 
-#include "../token_manager/token_manager.hpp"
-#include "../utils/constants_storage.h"
+#include "token_manager/token_manager.hpp"
+#include "utils/constants_storage.h"
+#include "utils/exceptions.h"
 
 namespace user_manager {
 
@@ -33,8 +42,8 @@ class UserManager : public components::LoggableComponentBase {
 
   token_manager::TokenManager& token_manager_;
   clients::http::Client& http_client_;
-  std::string elschool_url_;
   storages::postgres::ClusterPtr pg_cluster_;
+  const std::string elschool_url_;
 };
 
 void AppendUserManager(userver::components::ComponentList& component_list);

@@ -1,12 +1,4 @@
 #include "token_manager.hpp"
-#include <boost/lexical_cast.hpp>
-#include <boost/uuid/uuid.hpp>
-#include <boost/uuid/uuid_generators.hpp>
-#include "../utils/exceptions.h"
-#include "userver/clients/dns/component.hpp"
-#include "userver/components/component_context.hpp"
-#include "userver/http/common_headers.hpp"
-#include "userver/yaml_config/merge_schemas.hpp"
 
 namespace token_manager {
 
@@ -15,14 +7,16 @@ using namespace std::literals;
 TokenManager::TokenManager(const components::ComponentConfig& config,
                            const components::ComponentContext& context)
     : LoggableComponentBase(config, context),
+      token_cache_(TokenCache::GetInstance()),
       http_client_{context.FindComponent<userver::components::HttpClient>()
                        .GetHttpClient()},
       pg_cluster_(context
                       .FindComponent<userver::components::Postgres>(
                           "postgres-elschool-db")
                       .GetCluster()),
-      elschool_url_(config["elschool_url"].As<std::string>()),
-      token_cache_(TokenCache::GetInstance()) {}
+      elschool_url_(config[constants::Args::elschool_url].As<std::string>()) {
+  token_cache_.SetInvalidationTime(config[constants::Args::invalidation_time].As<int>());
+}
 
 std::size_t TokenManager::InvalidateTokenGroup(TokenGroupOption option) {
   std::size_t amount = 0;
@@ -42,7 +36,7 @@ void TokenManager::Invalidate(const boost::uuids::uuid& uuid) {
 
 bool TokenManager::CheckToken(std::string token) {
   std::unordered_map<std::string, std::string> cookies;
-  cookies["JWToken"s] = token;
+  cookies[constants::Args::JWToken.data()] = token;
 
   auto response = http_client_.CreateRequest()
                       .follow_redirects(false)
@@ -104,8 +98,7 @@ std::string TokenManager::GetToken(const std::string& id) {
     throw exceptions::TokenException("No user in database with uuid - "s + id);
   }
 
-  std::string data =
-      "login="s + login + "&password="s + password + "&GoogleAuthCode="s;
+  std::string data = fmt::format("login={}&password={}&GoogleAuthCode="s, login, password);
 
   auto response = http_client_.CreateRequest()
                       .follow_redirects(false)
@@ -126,7 +119,7 @@ std::string TokenManager::GetToken(const std::string& id) {
   std::unordered_map<std::string, std::string> cookies;
 
   auto cookie_map = response->cookies();
-  token = cookie_map.at("JWToken"s).Value();
+  token = cookie_map.at(constants::Args::JWToken.data()).Value();
 
   if (token.empty()) {
     throw exceptions::TokenException(
@@ -150,6 +143,9 @@ properties:
     elschool_url:
         type: string
         description: url of elschool
+    invalidation_time:
+        type: integer
+        description: lifetime of token in seconds (must be less than a week)
 )");
 }
 

@@ -1,26 +1,27 @@
 #pragma once
 
-#include "../../token_manager/token_manager.hpp"
-#include "../../utils/constants_storage.h"
-#include "userver/clients/http/client.hpp"
-#include "userver/clients/http/component.hpp"
-#include "userver/components/component_list.hpp"
-#include "userver/components/minimal_server_component_list.hpp"
-#include "userver/server/handlers/http_handler_base.hpp"
+#include <userver/clients/http/client.hpp>
+#include <userver/clients/http/component.hpp>
+#include <userver/components/component_list.hpp>
+#include <userver/components/minimal_server_component_list.hpp>
+#include <userver/server/handlers/http_handler_base.hpp>
+#include <userver/components/component_context.hpp>
+
+#include "token_manager/token_manager.hpp"
+#include "utils/constants_storage.h"
 
 namespace token_handler {
 
-using namespace userver;
 using namespace std::literals;
 
-class TokenHandler final : public server::handlers::HttpHandlerBase {
+class TokenHandler final : public userver::server::handlers::HttpHandlerBase {
  public:
   static constexpr std::string_view kName = "handler-invalidate-token"sv;
 
   using HttpHandlerBase::HttpHandlerBase;
 
-  TokenHandler(const components::ComponentConfig& config,
-               const components::ComponentContext& context);
+  TokenHandler(const userver::components::ComponentConfig& config,
+               const userver::components::ComponentContext& context);
 
   std::string HandleRequestThrow(
       const userver::server::http::HttpRequest& request,

@@ -1,14 +1,4 @@
 #include "user_manager.hpp"
-#include <boost/uuid/random_generator.hpp>
-#include <boost/uuid/string_generator.hpp>
-#include <boost/uuid/uuid.hpp>
-#include <boost/uuid/uuid_io.hpp>
-#include "../utils/exceptions.h"
-#include "userver/clients/dns/component.hpp"
-#include "userver/components/component_context.hpp"
-#include "userver/http/common_headers.hpp"
-#include "userver/utils/uuid4.hpp"
-#include "userver/yaml_config/merge_schemas.hpp"
 
 namespace {
 
@@ -31,7 +21,7 @@ const storages::postgres::Query kUpdateUserData{
 const storages::postgres::Query kDeleteUserData{
     "DELETE FROM elschool_api_schema.elschool_users WHERE id=$1",
     storages::postgres::Query::Name{"delete_user_data"}};
-}  // namespace
+}
 
 namespace user_manager {
 
@@ -40,14 +30,14 @@ using namespace std::literals;
 UserManager::UserManager(const components::ComponentConfig& config,
                          const components::ComponentContext& context)
     : LoggableComponentBase(config, context),
+      token_manager_(context.FindComponent<token_manager::TokenManager>()),
       http_client_{context.FindComponent<userver::components::HttpClient>()
                        .GetHttpClient()},
       pg_cluster_(context
                       .FindComponent<userver::components::Postgres>(
                           "postgres-elschool-db")
                       .GetCluster()),
-      elschool_url_(config["elschool_url"].As<std::string>()),
-      token_manager_(context.FindComponent<token_manager::TokenManager>()) {}
+      elschool_url_(config[constants::Args::elschool_url].As<std::string>()) {}
 
 std::optional<std::string> UserManager::AddUserData(std::string login,
                                                     std::string password) {
@@ -131,9 +121,7 @@ bool UserManager::DeleteUserData(std::string id) {
 }
 
 bool UserManager::CheckUserData(std::string login, std::string password) const {
-  std::string data =
-      "login="s + login + "&password="s + password + "&GoogleAuthCode="s;
-  LOG_CRITICAL() << "INPUT " << data << " " << elschool_url_ + std::string(constants::Paths::path_logon);
+  std::string data = fmt::format("login={}&password={}&GoogleAuthCode="s, login, password);
   auto response = http_client_.CreateRequest()
                       .follow_redirects(false)
                       .post(elschool_url_ + std::string(constants::Paths::path_logon))

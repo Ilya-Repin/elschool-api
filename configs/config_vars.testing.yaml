@@ -3,6 +3,7 @@ worker-fs-threads: 2
 logger-level: debug
 
 is-testing: true
+token_lifetime: 172800
 elschool_url: ''
 
 # elschool_api_db is the service name + _ + filename of the db_1.sql

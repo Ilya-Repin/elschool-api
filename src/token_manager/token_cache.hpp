@@ -1,15 +1,17 @@
 #pragma once
 
-#include <boost/uuid/uuid.hpp>
 #include <chrono>
 #include <optional>
 #include <string>
 #include <unordered_map>
+#include <optional>
 #include <userver/engine/shared_mutex.hpp>
+#include <boost/uuid/uuid.hpp>
+#include <boost/uuid/uuid_io.hpp>
+
+#include "utils/constants_storage.h"
 
 namespace token_manager {
-
-using namespace userver;
 
 struct Token {
   std::string token;
@@ -20,13 +22,16 @@ class TokenCache {
  public:
   static TokenCache& GetInstance();
 
-  void HeatCache(std::unordered_map<std::string, Token> firewood);
-  std::optional<std::string> FindToken(boost::uuids::uuid uuid);
-  void AddToken(boost::uuids::uuid uuid, std::string token);
-  void InvalidateToken(boost::uuids::uuid uuid);
+  void SetInvalidationTime(const uint64_t& time);
+
+  bool IsInvalidatingOldTokens();
+
+  void HeatCache(const std::unordered_map<std::string, Token>& firewood);
+  std::optional<std::string> FindToken(const boost::uuids::uuid& uuid);
+  void AddToken(const boost::uuids::uuid& uuid, const std::string& token);
+  void InvalidateToken(const boost::uuids::uuid& uuid);
   std::size_t InvalidateOldTokens();
   std::size_t InvalidateAllTokens();
-  bool IsInvalidatingOldTokens();
 
  private:
   TokenCache() = default;
@@ -37,7 +42,8 @@ class TokenCache {
 
 
   std::unordered_map<std::string, Token> tokens_;
-  engine::SharedMutex mutex_;
+  userver::engine::SharedMutex mutex_;
   std::atomic<bool> invalidating_old_{false};
+  uint64_t token_lifetime_ = 172800;
 };
 }  // namespace token_manager

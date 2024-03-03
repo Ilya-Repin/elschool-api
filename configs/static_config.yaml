@@ -79,6 +79,8 @@ components_manager:
 
         token-manager:
             elschool_url: $elschool_url
+            invalidation_time: $token_lifetime
+
         user-manager:
             elschool_url: $elschool_url
 

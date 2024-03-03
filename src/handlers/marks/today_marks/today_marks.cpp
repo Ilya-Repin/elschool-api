@@ -1,39 +1,37 @@
 #include "today_marks.hpp"
-#include "../../../utils/exceptions.h"
-#include "userver/clients/http/component.hpp"
-#include "userver/components/component_context.hpp"
-#include "userver/yaml_config/merge_schemas.hpp"
 
 namespace today_marks {
 
-TodayMarks::TodayMarks(const components::ComponentConfig& config,
-                       const components::ComponentContext& context)
+TodayMarks::TodayMarks(const userver::components::ComponentConfig& config,
+                       const userver::components::ComponentContext& context)
     : HttpHandlerBase(config, context),
+      token_manager_(context.FindComponent<token_manager::TokenManager>()),
       http_client_{context.FindComponent<userver::components::HttpClient>()
                        .GetHttpClient()},
-      token_manager_(context.FindComponent<token_manager::TokenManager>()),
-      elschool_url_(config["elschool_url"].As<std::string>()),
-      parser_(parser::Strategy::TODAY_MARKS) {}
+      parser_(parser::Strategy::TODAY_MARKS),
+      elschool_url_(config[constants::Args::elschool_url].As<std::string>()) {}
+
+// TODO Вынести логику из хэндлера
 
 std::string TodayMarks::HandleRequestThrow(
     const userver::server::http::HttpRequest& request,
-    userver::server::request::RequestContext& context) const {
-  const std::string& uuid = request.GetArg("id");
+    userver::server::request::RequestContext&) const {
+  const std::string& uuid = request.GetArg(constants::Args::id);
 
   if (uuid.empty()) {
-    throw server::handlers::ClientError(
-        server::handlers::ExternalBody{"No 'id' argument"s});
+    throw userver::server::handlers::ClientError(
+        userver::server::handlers::ExternalBody{"No 'id' argument"s});
   }
 
   std::string JWToken;
   try {
     JWToken = token_manager_.GetToken(uuid);
   } catch (exceptions::TokenException& e) {
-    throw server::handlers::InternalServerError(
-        server::handlers::ExternalBody{e.what()});
+    throw userver::server::handlers::InternalServerError(
+        userver::server::handlers::ExternalBody{e.what()});
   } catch (std::invalid_argument& e) {
-    throw server::handlers::ClientError(
-        server::handlers::ExternalBody{e.what()});
+    throw userver::server::handlers::ClientError(
+        userver::server::handlers::ExternalBody{e.what()});
   }
 
   std::string headers = GetUrlHeaders(http_client_, JWToken, elschool_url_);
@@ -42,7 +40,7 @@ std::string TodayMarks::HandleRequestThrow(
       elschool_url_ + std::string(constants::Paths::path_marks) + headers;
 
   std::unordered_map<std::string, std::string> cookies;
-  cookies["JWToken"s] = JWToken;
+  cookies[constants::Args::JWToken.data()] = JWToken;
 
   auto response = http_client_.CreateRequest()
                       .follow_redirects(false)
@@ -57,15 +55,15 @@ std::string TodayMarks::HandleRequestThrow(
     try {
       marks = parser_.Parse(response->body());
     } catch (exceptions::ParsingException& e) {
-      throw server::handlers::InternalServerError(
-          server::handlers::ExternalBody{e.what()});
+      throw userver::server::handlers::InternalServerError(
+          userver::server::handlers::ExternalBody{e.what()});
     }
   } else {
-    throw server::handlers::InternalServerError(
-        server::handlers::ExternalBody{"Error during mark's request"s});
+    throw userver::server::handlers::InternalServerError(
+        userver::server::handlers::ExternalBody{"Error during mark's request"s});
   }
 
-  formats::json::ValueBuilder builder;
+  userver::formats::json::ValueBuilder builder;
 
   for (auto& i : marks) {
     builder[i.first] = i.second;
@@ -81,7 +79,7 @@ void AppendTodayMarks(userver::components::ComponentList& component_list) {
 }
 
 userver::yaml_config::Schema TodayMarks::GetStaticConfigSchema() {
-  return userver::yaml_config::MergeSchemas<server::handlers::HttpHandlerBase>(
+  return userver::yaml_config::MergeSchemas<userver::server::handlers::HttpHandlerBase>(
       R"(
 type: object
 description: today marks handler

@@ -1,15 +1,22 @@
 #pragma once
 
 #include <unordered_map>
-#include "userver/clients/http/client.hpp"
-#include "userver/clients/http/component.hpp"
-#include "userver/components/component_list.hpp"
-#include "userver/storages/postgres/cluster.hpp"
-#include "userver/storages/postgres/component.hpp"
-#include "userver/utils/assert.hpp"
+#include <userver/clients/http/client.hpp>
+#include <userver/clients/http/component.hpp>
+#include <userver/components/component_list.hpp>
+#include <userver/storages/postgres/cluster.hpp>
+#include <userver/storages/postgres/component.hpp>
+#include <userver/utils/assert.hpp>
+#include <userver/components/component_context.hpp>
+#include <userver/clients/dns/component.hpp>
+#include <userver/http/common_headers.hpp>
+#include <userver/yaml_config/merge_schemas.hpp>
+#include <boost/uuid/uuid.hpp>
+#include <boost/uuid/uuid_generators.hpp>
 
-#include "../utils/constants_storage.h"
-#include "token_cache.hpp"
+#include "utils/constants_storage.h"
+#include "token_manager/token_cache.hpp"
+#include "utils/exceptions.h"
 
 namespace token_manager {
 
@@ -34,10 +41,10 @@ class TokenManager : public components::LoggableComponentBase {
  private:
   bool CheckToken(std::string token);
 
-  std::string elschool_url_;
   TokenCache& token_cache_;
   clients::http::Client& http_client_;
   storages::postgres::ClusterPtr pg_cluster_;
+  const std::string elschool_url_;
 };
 
 void AppendTokenManager(userver::components::ComponentList& component_list);

@@ -2,10 +2,15 @@
 
 #include <gumbo.h>
 #include <stack>
-#include <string>
 #include <unordered_map>
 #include <vector>
+#include <string>
+#include <cstring>
+#include <sstream>
 #include <memory>
+#include <chrono>
+#include <iomanip>
+#include "utils/exceptions.h"
 
 namespace parser {
 
@@ -76,7 +81,7 @@ class Parser {
 
  private:
   std::unique_ptr<ParsingStrategy> strategy_;
-  CurrentTimeProvider time_provider_; // Стандартное время
+  CurrentTimeProvider time_provider_;
 };
 
 }  // namespace parser

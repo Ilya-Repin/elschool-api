@@ -6,4 +6,7 @@ is-testing: false
 
 server-port: 8080
 
+token_lifetime: 172800
+elschool_url: 'elschool.ru'
+
 dbconnection: 'postgresql://elschool_api_user:password@service-postgres:5432/elschool_api_db'

@@ -1,4 +1,4 @@
-#include "../../src/parser/parser.hpp"
+#include "parser/parser.hpp"
 
 class MockedTimeProvider : public parser::TimeProvider {
  public:

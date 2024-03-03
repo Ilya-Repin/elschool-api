@@ -1,12 +1,9 @@
 #include "parser.hpp"
-#include <chrono>
-#include <cstring>
-#include <iomanip>
-#include <sstream>
 
-#include "../utils/exceptions.h"
+// TODO Переписать парсинг
 
 namespace {
+
 GumboNode* FindTag(GumboNode* node, std::stack<parser::MarkupElem>& path) {
   if (path.empty()) {
     return node;
@@ -40,7 +37,6 @@ int CountPeriods(GumboNode* tbody) {
     return periods;
   }
 
-  // assert(tbody->v.element.tag == GUMBO_TAG_TBODY);
   GumboVector* children = &tbody->v.element.children;
 
   for (std::size_t i = 0; i < children->length; ++i) {
@@ -53,7 +49,7 @@ int CountPeriods(GumboNode* tbody) {
   return periods;
 }
 
-}  // namespace
+}
 
 namespace parser {
 
@@ -68,45 +64,44 @@ int CurrentTimeProvider::GetMonth() {
   return localTime->tm_mon + 1;
 }
 
-// Функция для определения текущего семестра
 int CurrentTimeProvider::GetSemester() {
   int month = GetMonth();
   if (month >= 1 && month <= 6) {
-    return 1;  // Осенний семестр
+    return 1;
   } else if (month >= 9 && month <= 12) {
-    return 2;  // Весенний семестр
+    return 2;
   } else {
-    return 0;  // Вне учебных семестров
+    return 0;
   }
 }
 
-// Функция для определения текущего триместра
+
 int CurrentTimeProvider::GetTrimester() {
   int month = GetMonth();
   if (month >= 9 && month <= 11) {
-    return 1;  // Первый триместр
+    return 1;
   } else if (month == 12 || month == 1 || month == 2) {
-    return 2;  // Второй триместр
+    return 2;
   } else if (month >= 3 && month <= 5) {
-    return 3;  // Третий триместр
+    return 3;
   } else {
-    return 0;  // Вне триместров
+    return 0;
   }
 }
 
-// Функция для определения текущего квартала
+
 int CurrentTimeProvider::GetQuarter() {
   int month = GetMonth();
   if (month >= 9 && month <= 10) {
-    return 1;  // Первый квартал
+    return 1;
   } else if (month >= 11 && month <= 12) {
-    return 2;  // Второй квартал
+    return 2;
   } else if (month >= 1 && month <= 3) {
-    return 3;  // Третий квартал
+    return 3;
   } else if (month >= 3 && month <= 5) {
-    return 4;  // Четвертый квартал
+    return 4;
   } else {
-    return 0;  // Вне кварталов
+    return 0;
   }
 }
 
