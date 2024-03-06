@@ -27,11 +27,13 @@ class TokenCache {
   bool IsInvalidatingOldTokens();
 
   void HeatCache(const std::unordered_map<std::string, Token>& firewood);
-  std::optional<std::string> FindToken(const boost::uuids::uuid& uuid);
   void AddToken(const boost::uuids::uuid& uuid, const std::string& token);
-  void InvalidateToken(const boost::uuids::uuid& uuid);
+
+  std::optional<std::string> FindToken(const boost::uuids::uuid& uuid);
+
   std::size_t InvalidateOldTokens();
   std::size_t InvalidateAllTokens();
+  void InvalidateToken(const boost::uuids::uuid& uuid);
 
  private:
   TokenCache() = default;
@@ -43,7 +45,7 @@ class TokenCache {
 
   std::unordered_map<std::string, Token> tokens_;
   userver::engine::SharedMutex mutex_;
-  std::atomic<bool> invalidating_old_{false};
-  uint64_t token_lifetime_ = 172800;
+  std::atomic<bool> is_invalidating_old_{false};
+  uint64_t token_lifetime_{172800};
 };
 }  // namespace token_manager

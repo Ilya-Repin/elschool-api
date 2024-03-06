@@ -39,32 +39,34 @@ UserManager::UserManager(const components::ComponentConfig& config,
                       .GetCluster()),
       elschool_url_(config[constants::Args::elschool_url].As<std::string>()) {}
 
-std::optional<std::string> UserManager::AddUserData(std::string login,
-                                                    std::string password) {
-  boost::uuids::uuid uuid;
+std::optional<std::string> UserManager::AddUserData(const std::string &login,
+                                                    const std::string &password) {
+
 
   if (CheckUserData(login, password)) {
-    storages::postgres::ResultSet res_select =
+    boost::uuids::uuid uuid;
+
+    storages::postgres::ResultSet result_select =
         pg_cluster_->Execute(storages::postgres::ClusterHostType::kSlave,
                              kSelectUserData, login.c_str(), password.c_str());
 
-    if (res_select.IsEmpty()) {
+    if (result_select.IsEmpty()) {
       boost::uuids::random_generator gen;
       uuid = gen();
 
-      auto res_insert =
+      auto result_insert =
           pg_cluster_->Execute(storages::postgres::ClusterHostType::kMaster,
                                kInsertUserData, uuid, login, password);
 
-      if (!res_insert.RowsAffected()) {
+      if (!result_insert.RowsAffected()) {
         return std::nullopt;
       }
 
     } else {
-      uuid = res_select.AsSingleRow<boost::uuids::uuid>();
+      uuid = result_select.AsSingleRow<boost::uuids::uuid>();
     }
 
-    std::string id = boost::uuids::to_string(uuid);
+    const std::string id = boost::uuids::to_string(uuid);
 
     return id;
   }
@@ -72,8 +74,8 @@ std::optional<std::string> UserManager::AddUserData(std::string login,
   return std::nullopt;
 }
 
-bool UserManager::UpdateUserData(std::string id, std::string new_login,
-                                 std::string new_password) {
+bool UserManager::UpdateUserData(const std::string &id, const std::string &new_login,
+                                 const std::string &new_password) {
   boost::uuids::uuid uuid;
 
   try {
@@ -87,10 +89,10 @@ bool UserManager::UpdateUserData(std::string id, std::string new_login,
     throw std::invalid_argument("Invalid new login and password!"s);
   }
 
-  auto res = pg_cluster_->Execute(storages::postgres::ClusterHostType::kMaster,
+  auto result = pg_cluster_->Execute(storages::postgres::ClusterHostType::kMaster,
                                   kUpdateUserData, uuid, new_login, new_password);
 
-  if (res.RowsAffected()) {
+  if (result.RowsAffected()) {
     token_manager_.Invalidate(uuid);
     return true;
   }
@@ -98,7 +100,7 @@ bool UserManager::UpdateUserData(std::string id, std::string new_login,
   return false;
 }
 
-bool UserManager::DeleteUserData(std::string id) {
+bool UserManager::DeleteUserData(const std::string &id) {
   boost::uuids::uuid uuid;
 
   try {
@@ -108,10 +110,10 @@ bool UserManager::DeleteUserData(std::string id) {
     throw std::invalid_argument("Received id is not a uuid!"s);
   }
 
-  auto res_delete = pg_cluster_->Execute(
+  auto result_delete = pg_cluster_->Execute(
       storages::postgres::ClusterHostType::kMaster, kDeleteUserData, uuid);
 
-  if (res_delete.RowsAffected()) {
+  if (result_delete.RowsAffected()) {
     token_manager_.Invalidate(uuid);
 
     return true;
@@ -120,8 +122,9 @@ bool UserManager::DeleteUserData(std::string id) {
   return false;
 }
 
-bool UserManager::CheckUserData(std::string login, std::string password) const {
-  std::string data = fmt::format("login={}&password={}&GoogleAuthCode="s, login, password);
+bool UserManager::CheckUserData(const std::string &login, const std::string &password) const {
+  const std::string data = fmt::format("login={}&password={}&GoogleAuthCode="s, login, password);
+
   auto response = http_client_.CreateRequest()
                       .follow_redirects(false)
                       .post(elschool_url_ + std::string(constants::Paths::path_logon))

@@ -2,10 +2,10 @@
 
 #include <userver/clients/http/client.hpp>
 #include <userver/clients/http/component.hpp>
+#include <userver/components/component_context.hpp>
 #include <userver/components/component_list.hpp>
 #include <userver/components/minimal_server_component_list.hpp>
 #include <userver/server/handlers/http_handler_base.hpp>
-#include <userver/components/component_context.hpp>
 
 #include "token_manager/token_manager.hpp"
 #include "utils/constants_storage.h"

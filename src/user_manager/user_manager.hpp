@@ -31,14 +31,14 @@ class UserManager : public components::LoggableComponentBase {
               const components::ComponentContext& context);
   ~UserManager() = default;
 
-  std::optional<std::string> AddUserData(std::string login, std::string password);
-  bool UpdateUserData(std::string id, std::string new_login, std::string new_password);
-  bool DeleteUserData(std::string id);
+  std::optional<std::string> AddUserData(const std::string &login, const std::string &password);
+  bool UpdateUserData(const std::string &id, const std::string &new_login, const std::string &new_password);
+  bool DeleteUserData(const std::string &id);
 
   static userver::yaml_config::Schema GetStaticConfigSchema();
 
  private:
-  bool CheckUserData(std::string login, std::string password) const;
+  bool CheckUserData(const std::string &login, const std::string &password) const;
 
   token_manager::TokenManager& token_manager_;
   clients::http::Client& http_client_;

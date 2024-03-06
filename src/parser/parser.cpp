@@ -66,52 +66,60 @@ int CurrentTimeProvider::GetMonth() {
 
 int CurrentTimeProvider::GetSemester() {
   int month = GetMonth();
+
   if (month >= 1 && month <= 6) {
     return 1;
-  } else if (month >= 9 && month <= 12) {
-    return 2;
-  } else {
-    return 0;
   }
-}
+  if (month >= 9 && month <= 12) {
+    return 2;
+  }
 
+  return 0;
+}
 
 int CurrentTimeProvider::GetTrimester() {
   int month = GetMonth();
+
   if (month >= 9 && month <= 11) {
     return 1;
-  } else if (month == 12 || month == 1 || month == 2) {
-    return 2;
-  } else if (month >= 3 && month <= 5) {
-    return 3;
-  } else {
-    return 0;
   }
-}
+  if (month == 12 || month == 1 || month == 2) {
+    return 2;
+  }
+  if (month >= 3 && month <= 5) {
+    return 3;
+  }
 
+  return 0;
+}
 
 int CurrentTimeProvider::GetQuarter() {
   int month = GetMonth();
+
   if (month >= 9 && month <= 10) {
     return 1;
-  } else if (month >= 11 && month <= 12) {
-    return 2;
-  } else if (month >= 1 && month <= 3) {
-    return 3;
-  } else if (month >= 3 && month <= 5) {
-    return 4;
-  } else {
-    return 0;
   }
+  if (month >= 11 && month <= 12) {
+    return 2;
+  }
+  if (month >= 1 && month <= 3) {
+    return 3;
+  }
+  if (month >= 3 && month <= 5) {
+    return 4;
+  }
+
+  return 0;
 }
 
 std::string CurrentTimeProvider::GetDate() {
-  std::time_t currentTime = std::time(nullptr);
+  std::time_t current_time = std::time(nullptr);
 
-  std::tm* localTime = std::localtime(&currentTime);
+  std::tm* local_time = std::localtime(&current_time);
 
   std::stringstream ss;
-  ss << std::put_time(localTime, "%d.%m.%Y");
+  ss << std::put_time(local_time, "%d.%m.%Y");
+
   return ss.str();
 }
 
@@ -300,7 +308,7 @@ void TodayParsingStrategy::Parse(
   GumboNode* full_table = FindTag(root, full_path);
 
   FindTodayMarks(full_table, today_marks);
-  
+
   gumbo_destroy_output(&kGumboDefaultOptions, output);
 }
 

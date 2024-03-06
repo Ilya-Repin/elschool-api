@@ -24,12 +24,12 @@ include_directories(src)
 
 # Common sources
 add_library(${PROJECT_NAME}_objs OBJECT
-        src/handlers/marks/average_marks/average_marks.cpp
-        src/handlers/marks/average_marks/average_marks.hpp
-        src/handlers/marks/today_marks/today_marks.cpp
-        src/handlers/marks/today_marks/today_marks.hpp
-        src/handlers/marks/marks_base.cpp
-        src/handlers/marks/marks_base.hpp
+        src/handlers/marks_handlers/average_marks_handler/average_marks_handler.cpp
+        src/handlers/marks_handlers/average_marks_handler/average_marks_handler.hpp
+        src/handlers/marks_handlers/today_marks_handler/today_marks_handler.cpp
+        src/handlers/marks_handlers/today_marks_handler/today_marks_handler.hpp
+        src/handlers/marks_handlers/marks_base.cpp
+        src/handlers/marks_handlers/marks_base.hpp
         src/handlers/users_handler/users_handler.cpp
         src/handlers/users_handler/users_handler.hpp
         src/handlers/token_handler/token_handler.cpp

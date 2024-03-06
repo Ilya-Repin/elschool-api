@@ -73,7 +73,7 @@ format:
 
 # Internal hidden targets that are used only in docker environment
 --in-docker-start-debug --in-docker-start-release: --in-docker-start-%: install-%
-	psql 'postgresql://user:password@service-postgres:5432/elschool_api_db' -f ./postgresql/data/initial_data.sql
+	psql 'postgresql://elschool_api_user:password@service-postgres:5432/elschool_api_db' -f ./postgresql/data/initial_data.sql
 	/home/user/.local/bin/elschool_api \
 		--config /home/user/.local/etc/elschool_api/static_config.yaml \
 		--config_vars /home/user/.local/etc/elschool_api/config_vars.docker.yaml

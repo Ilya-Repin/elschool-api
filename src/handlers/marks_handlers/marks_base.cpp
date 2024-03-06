@@ -15,11 +15,11 @@ std::string MarksBase::GetUrlHeaders(userver::clients::http::Client& http_client
 
   std::string body = response->body();
 
-  std::string user_headers = std::string(body.substr(
+  auto user_headers = std::string(body.substr(
       body.find("?"),
       body.find("here") - body.find("?") - 2));  // добавить std::string::npos
 
-  std::string to_delete = "amp;"s;
+  const auto to_delete = "amp;"s;
   size_t start{user_headers.find(to_delete)};
 
   while (start != std::string::npos) {

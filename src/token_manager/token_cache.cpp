@@ -18,12 +18,12 @@ std::optional<std::string> TokenCache::FindToken(const boost::uuids::uuid& uuid)
 
   std::shared_lock<userver::engine::SharedMutex> lock(mutex_);
 
-  std::string id = boost::uuids::to_string(uuid);
+  const std::string id = boost::uuids::to_string(uuid);
 
   if (tokens_.find(id) != tokens_.end()) {
-    auto token = tokens_.find(id);
+    const auto token = tokens_.find(id);
 
-    uint64_t seconds_since_epoch =
+    const uint64_t seconds_since_epoch =
         duration_cast<seconds>(system_clock::now().time_since_epoch()).count();
 
     if (seconds_since_epoch - token->second.seconds_since_epoch < 172800) {
@@ -39,24 +39,24 @@ void TokenCache::AddToken(const boost::uuids::uuid& uuid, const std::string& tok
 
   std::unique_lock<userver::engine::SharedMutex> lock(mutex_);
 
-  uint64_t seconds_since_epoch =
+  const uint64_t seconds_since_epoch =
       duration_cast<seconds>(system_clock::now().time_since_epoch()).count();
 
-  std::string id = boost::uuids::to_string(uuid);
+  const std::string id = boost::uuids::to_string(uuid);
 
   tokens_[id] = Token{token, seconds_since_epoch};
 }
 
 void TokenCache::InvalidateToken(const boost::uuids::uuid& uuid) {
   std::unique_lock<userver::engine::SharedMutex> lock(mutex_);
-  std::string id = boost::uuids::to_string(uuid);
+  const std::string id = boost::uuids::to_string(uuid);
   tokens_.erase(id);
  }
 
 std::size_t TokenCache::InvalidateOldTokens() {
   using namespace std::chrono;
 
-  invalidating_old_ = true;
+  is_invalidating_old_ = true;
 
   std::unique_lock<userver::engine::SharedMutex> lock(mutex_);
   uint64_t seconds_since_epoch =
@@ -64,10 +64,10 @@ std::size_t TokenCache::InvalidateOldTokens() {
 
   std::vector<std::string> keys_to_delete;
 
-  for (const auto& i : tokens_) {
-    if (seconds_since_epoch - i.second.seconds_since_epoch >
+  for (const auto& token : tokens_) {
+    if (seconds_since_epoch - token.second.seconds_since_epoch >
         token_lifetime_) {
-      keys_to_delete.push_back(i.first);
+      keys_to_delete.push_back(token.first);
       }
   }
 
@@ -75,7 +75,7 @@ std::size_t TokenCache::InvalidateOldTokens() {
     tokens_.erase(key);
   }
 
-  invalidating_old_ = false;
+  is_invalidating_old_ = false;
 
   return keys_to_delete.size();
 }
@@ -83,14 +83,14 @@ std::size_t TokenCache::InvalidateOldTokens() {
 std::size_t TokenCache::InvalidateAllTokens() {
   std::unique_lock<userver::engine::SharedMutex> lock(mutex_);
 
-  std::size_t size = tokens_.size();
+  const std::size_t size = tokens_.size();
   tokens_.clear();
 
   return size;
 }
 
 bool TokenCache::IsInvalidatingOldTokens() {
-  return invalidating_old_;
+  return is_invalidating_old_;
 }
 
 void TokenCache::HeatCache(const std::unordered_map<std::string, Token>& firewood) {

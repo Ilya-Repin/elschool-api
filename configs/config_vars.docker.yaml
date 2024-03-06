@@ -1,12 +1,12 @@
 worker-threads: 4
 worker-fs-threads: 2
-logger-level: debug
+logger-level: info
 
 is-testing: false
 
 server-port: 8080
 
 token_lifetime: 172800
-elschool_url: 'elschool.ru'
+elschool_url: 'https://elschool.ru'
 
 dbconnection: 'postgresql://elschool_api_user:password@service-postgres:5432/elschool_api_db'

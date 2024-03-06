@@ -39,7 +39,7 @@ class TokenManager : public components::LoggableComponentBase {
   static userver::yaml_config::Schema GetStaticConfigSchema();
 
  private:
-  bool CheckToken(std::string token);
+  bool CheckToken(const std::string &token);
 
   TokenCache& token_cache_;
   clients::http::Client& http_client_;

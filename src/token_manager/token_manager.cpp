@@ -34,7 +34,7 @@ void TokenManager::Invalidate(const boost::uuids::uuid& uuid) {
   token_cache_.InvalidateToken(uuid);
 }
 
-bool TokenManager::CheckToken(std::string token) {
+bool TokenManager::CheckToken(const std::string &token) {
   std::unordered_map<std::string, std::string> cookies;
   cookies[constants::Args::JWToken.data()] = token;
 
@@ -60,21 +60,19 @@ std::string TokenManager::GetToken(const std::string& id) {
   }
 
   if (!token_cache_.IsInvalidatingOldTokens()) {
-    std::optional<std::string> found = token_cache_.FindToken(uuid);
-    if (found) {
-      bool result = CheckToken(*found);
+    std::optional<std::string> token = token_cache_.FindToken(uuid);
 
-      if (result) {
-        return *found;
-      } else {
-        token_cache_.InvalidateToken(uuid);
+    if (token) {
+      if (CheckToken(*token)) {
+        return *token;
       }
+
+      token_cache_.InvalidateToken(uuid);
     }
   }
 
   LOG_INFO() << "There's no actual token in cache with uuid: " << id;
 
-  std::string token;
 
   std::string login, password;
 
@@ -98,7 +96,7 @@ std::string TokenManager::GetToken(const std::string& id) {
     throw exceptions::TokenException("No user in database with uuid - "s + id);
   }
 
-  std::string data = fmt::format("login={}&password={}&GoogleAuthCode="s, login, password);
+  const std::string data = fmt::format("login={}&password={}&GoogleAuthCode="s, login, password);
 
   auto response = http_client_.CreateRequest()
                       .follow_redirects(false)
@@ -119,7 +117,7 @@ std::string TokenManager::GetToken(const std::string& id) {
   std::unordered_map<std::string, std::string> cookies;
 
   auto cookie_map = response->cookies();
-  token = cookie_map.at(constants::Args::JWToken.data()).Value();
+  const std::string token = cookie_map.at(constants::Args::JWToken.data()).Value();
 
   if (token.empty()) {
     throw exceptions::TokenException(

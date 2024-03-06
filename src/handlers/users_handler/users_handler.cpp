@@ -22,17 +22,21 @@ std::string UsersHandler::HandleRequestThrow(
     userver::server::request::RequestContext&) const {
   if (request.GetMethod() == userver::server::http::HttpMethod::kPost) {
     return HandlePostRequest(request);
-  } else if (request.GetMethod() == userver::server::http::HttpMethod::kDelete) {
+  }
+  if (request.GetMethod() == userver::server::http::HttpMethod::kDelete) {
     return HandleDeleteRequest(request);
-  } else if (request.GetMethod() == userver::server::http::HttpMethod::kPut) {
+  }
+  if (request.GetMethod() == userver::server::http::HttpMethod::kPut) {
     return HandlePutRequest(request);
   }
 
-  request.SetResponseStatus(userver::server::http::HttpStatus::kMethodNotAllowed);
+  request.SetResponseStatus(
+      userver::server::http::HttpStatus::kMethodNotAllowed);
   return "Unsupported http method!"s;
 }
 
-std::string UsersHandler::HandlePostRequest(const userver::server::http::HttpRequest& request) const {
+std::string UsersHandler::HandlePostRequest(
+    const userver::server::http::HttpRequest& request) const {
   const std::string& login = request.GetArg(constants::Args::login);
   const std::string& password = request.GetArg(constants::Args::password);
 
@@ -41,10 +45,10 @@ std::string UsersHandler::HandlePostRequest(const userver::server::http::HttpReq
     CheckArgument(login, constants::Args::login);
     CheckArgument(password, constants::Args::password);
     id = user_manager_.AddUserData(login, password);
-  }catch (const std::invalid_argument& e) {
+  } catch (const std::invalid_argument& e) {
     throw userver::server::handlers::ClientError(
         userver::server::handlers::ExternalBody{e.what()});
-  } catch (const exceptions::UserException &e) {
+  } catch (const exceptions::UserException& e) {
     throw userver::server::handlers::InternalServerError(
         userver::server::handlers::ExternalBody{e.what()});
   }
@@ -52,15 +56,17 @@ std::string UsersHandler::HandlePostRequest(const userver::server::http::HttpReq
   if (id) {
     request.SetResponseStatus(userver::server::http::HttpStatus::kOk);
     return *id;
-  } else {
-    throw userver::server::handlers::InternalServerError(
-        userver::server::handlers::ExternalBody{"Failed to add user!"s});
   }
+
+  throw userver::server::handlers::InternalServerError(
+      userver::server::handlers::ExternalBody{"Failed to add user!"s});
 }
 
-std::string UsersHandler::HandleDeleteRequest(const userver::server::http::HttpRequest& request) const {
+std::string UsersHandler::HandleDeleteRequest(
+    const userver::server::http::HttpRequest& request) const {
   const std::string& id = request.GetArg("id");
   bool res;
+
   try {
     CheckArgument(id, "id");
 
@@ -74,15 +80,18 @@ std::string UsersHandler::HandleDeleteRequest(const userver::server::http::HttpR
   if (res) {
     request.SetResponseStatus(userver::server::http::HttpStatus::kOk);
     return "Deleted!"s;
-  } else {
-    request.SetResponseStatus(
-        userver::server::http::HttpStatus::kInternalServerError);
-    throw userver::server::handlers::ClientError(userver::server::handlers::ExternalBody{
-        "Failed to delete user with id - "s + id});
   }
+
+  request.SetResponseStatus(
+      userver::server::http::HttpStatus::kInternalServerError);
+
+  throw userver::server::handlers::ClientError(
+      userver::server::handlers::ExternalBody{
+          "Failed to delete user with id - "s + id});
 }
 
-std::string UsersHandler::HandlePutRequest(const userver::server::http::HttpRequest& request) const {
+std::string UsersHandler::HandlePutRequest(
+    const userver::server::http::HttpRequest& request) const {
   const std::string& id = request.GetArg(constants::Args::id);
   const std::string& login = request.GetArg(constants::Args::login);
   const std::string& password = request.GetArg(constants::Args::password);
@@ -99,8 +108,9 @@ std::string UsersHandler::HandlePutRequest(const userver::server::http::HttpRequ
     request.SetResponseStatus(userver::server::http::HttpStatus::kBadRequest);
     throw userver::server::handlers::ClientError(
         userver::server::handlers::ExternalBody{e.what()});
-  } catch (const exceptions::UserException &e) {
-    request.SetResponseStatus(userver::server::http::HttpStatus::kInternalServerError);
+  } catch (const exceptions::UserException& e) {
+    request.SetResponseStatus(
+        userver::server::http::HttpStatus::kInternalServerError);
     throw userver::server::handlers::ClientError(
         userver::server::handlers::ExternalBody{e.what()});
   }
@@ -108,12 +118,13 @@ std::string UsersHandler::HandlePutRequest(const userver::server::http::HttpRequ
   if (res) {
     request.SetResponseStatus(userver::server::http::HttpStatus::kOk);
     return "Updated!"s;
-  } else {
-    request.SetResponseStatus(
-        userver::server::http::HttpStatus::kInternalServerError);
-    throw userver::server::handlers::ClientError(userver::server::handlers::ExternalBody{
-        "Failed to update user with id - "s + id});
   }
+
+  request.SetResponseStatus(
+      userver::server::http::HttpStatus::kInternalServerError);
+  throw userver::server::handlers::ClientError(
+      userver::server::handlers::ExternalBody{
+          "Failed to update user with id - "s + id});
 }
 
 void AppendUsersHandler(userver::components::ComponentList& component_list) {

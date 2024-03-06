@@ -7,7 +7,6 @@ TokenHandler::TokenHandler(const userver::components::ComponentConfig& config,
     : HttpHandlerBase(config, context),
       token_manager_(context.FindComponent<token_manager::TokenManager>()) {}
 
-
 std::string TokenHandler::HandleRequestThrow(
     const userver::server::http::HttpRequest& request,
     userver::server::request::RequestContext&) const {
